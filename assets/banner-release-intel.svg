@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="888" height="200" viewBox="0 0 888 200">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1B4B"/>
+      <stop offset="50%" stop-color="#312E81"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="888" height="200" rx="12" fill="url(#bg-grad)"/>
+
+  <!-- Dot grid pattern -->
+  <g opacity="0.06">
+    <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="1" fill="white"/>
+    </pattern>
+    <rect width="888" height="200" fill="url(#dots)"/>
+  </g>
+
+  <!-- Accent line at top -->
+  <rect x="0" y="0" width="888" height="3" rx="0" fill="url(#accent)" opacity="0.8"/>
+
+  <!-- Logo mark (small hexagon) -->
+  <g transform="translate(48, 60)">
+    <!-- Faceted hexagon, scaled to ~80px -->
+    <polygon points="40,40 22.4,9.7 57.6,9.7 75.2,40 57.6,70.3 22.4,70.3" fill="none" stroke="none"/>
+    <polygon points="40,40 22.4,9.7 57.6,9.7" fill="#A78BFA" opacity="0.95"/>
+    <polygon points="40,40 57.6,9.7 75.2,40" fill="#8B5CF6" opacity="0.95"/>
+    <polygon points="40,40 75.2,40 57.6,70.3" fill="#7C3AED" opacity="0.95"/>
+    <polygon points="40,40 57.6,70.3 22.4,70.3" fill="#6D28D9" opacity="0.90"/>
+    <polygon points="40,40 22.4,70.3 4.8,40" fill="#7C3AED" opacity="0.92"/>
+    <polygon points="40,40 4.8,40 22.4,9.7" fill="#A78BFA" opacity="0.88"/>
+    <polygon points="75.2,40 57.6,70.3 22.4,70.3 4.8,40 22.4,9.7 57.6,9.7"
+             fill="none" stroke="#4C1D95" stroke-width="0.8" opacity="0.3"/>
+    <!-- Arrow glyph -->
+    <path d="M40,21 L52,37 L45,37 L45,59 L35,59 L35,37 L28,37 Z" fill="white" opacity="0.95"/>
+  </g>
+
+  <!-- Title -->
+  <text x="148" y="92" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="32" font-weight="700" fill="white" letter-spacing="-0.5">
+    release-intel-mcp
+  </text>
+
+  <!-- Tagline -->
+  <text x="148" y="120" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="14" fill="white" opacity="0.65">
+    Release intelligence from GitHub data. Commits, PRs, issues, contributors, changelogs.
+  </text>
+
+  <!-- Feature pills -->
+  <g transform="translate(148, 138)">
+    <rect x="0" y="0" width="92" height="24" rx="12" fill="#8B5CF6" opacity="0.25"/>
+    <text x="46" y="16" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+          font-size="11" fill="#C4B5FD" text-anchor="middle">MCP Server</text>
+
+    <rect x="102" y="0" width="86" height="24" rx="12" fill="#8B5CF6" opacity="0.25"/>
+    <text x="145" y="16" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+          font-size="11" fill="#C4B5FD" text-anchor="middle">TypeScript</text>
+
+    <rect x="198" y="0" width="100" height="24" rx="12" fill="#8B5CF6" opacity="0.25"/>
+    <text x="248" y="16" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+          font-size="11" fill="#C4B5FD" text-anchor="middle">GitHub API</text>
+
+    <rect x="308" y="0" width="70" height="24" rx="12" fill="#8B5CF6" opacity="0.25"/>
+    <text x="343" y="16" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+          font-size="11" fill="#C4B5FD" text-anchor="middle">stdio</text>
+
+    <rect x="388" y="0" width="70" height="24" rx="12" fill="#8B5CF6" opacity="0.25"/>
+    <text x="423" y="16" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+          font-size="11" fill="#C4B5FD" text-anchor="middle">HTTP</text>
+  </g>
+</svg>

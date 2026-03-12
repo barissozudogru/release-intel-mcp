@@ -1,11 +1,13 @@
-# release-intel-mcp
+<p align="center">
+  <img src="./assets/banner-release-intel.svg" alt="release-intel-mcp" width="888" />
+</p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@barissozudogru/release-intel-mcp"><img alt="npm" src="https://img.shields.io/npm/v/@barissozudogru/release-intel-mcp?style=flat-square&color=cb3837&logo=npm&logoColor=white" /></a>
+  <a href="https://www.npmjs.com/package/@barissozudogru/release-intel-mcp"><img alt="npm" src="https://img.shields.io/npm/v/@barissozudogru/release-intel-mcp?style=flat-square&color=8B5CF6&logo=npm&logoColor=white" /></a>
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" />
   <img alt="Node" src="https://img.shields.io/badge/Node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white" />
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" />
-  <img alt="MCP Server" src="https://img.shields.io/badge/MCP-Server-8A2BE2?style=flat-square" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square" />
+  <img alt="MCP Server" src="https://img.shields.io/badge/MCP-Server-0F172A?style=flat-square" />
 </p>
 
 An MCP server that generates release intelligence from GitHub repository data. It correlates commits, pull requests, issues, and contributors between any two git refs and returns structured context ready for AI synthesis into release notes, changelogs, and release summaries.
