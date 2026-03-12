@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-03-12
+
+### Fixed
+
+- GitHub Compare API 250-commit limit now detected with explicit warning
+- Concurrent API calls capped at 10 (was unbounded, triggering GitHub rate limits)
+- PR metadata fields (additions, deletions, changed_files) now optional (were undefined from summary endpoint)
+- Linked issue extraction removed false-positive bare #number pattern
+- PR association only picks merged PRs (was falling back to arbitrary unmerged PRs)
+- Contributor PR counts attributed to PR author instead of commit author
+- Rate limit errors (429/401/403) now detected and stop batch processing
+- Zod import uses standard convention (import { z } from "zod")
+
+### Added
+
+- Concurrency-limited batch API calls (10 at a time)
+- Structured MCP error responses with isError flag
+- Pagination safeguard (max 100 pages) prevents infinite loops
+- Fetch timeout (15s) on all API calls
+- Input validation on owner/repo parameters
+- Conventional commit parsing as fallback when PRs have no labels
+- GITHUB_TOKEN validation warning at startup
+- "other" category count in release summary stats
+- Dynamic version from package.json
+- Failed lookup warnings in tool output
+
+### Changed
+
+- JSON responses use compact format (saves LLM context window tokens)
+
+### Removed
+
+- Dead code: unused commitShas variable
+
 ## [0.1.0] - 2026-03-12
 
 ### Added
