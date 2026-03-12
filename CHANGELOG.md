@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-03-12
+
+### Fixed
+
+- lines_added/lines_deleted now fall back to Compare API file-level data when no PRs exist
+- Direct commits (without associated PRs) are now categorized using conventional commit parsing
+
+### Added
+
+- direct_commits count in get_pull_requests_in_range stats
+- Commits without PRs appear in categorized output with is_direct_commit flag
+
 ## [0.3.0] - 2026-03-12
 
 ### Added

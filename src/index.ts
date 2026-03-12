@@ -122,7 +122,7 @@ interface GitHubPR {
 
 interface GitHubCompareResponse {
   commits: GitHubCommit[];
-  files: Array<{ filename: string; status: string; changes: number }>;
+  files: Array<{ filename: string; status: string; changes: number; additions: number; deletions: number }>;
   ahead_by: number;
   behind_by: number;
   status: string;
@@ -335,13 +335,12 @@ server.registerTool(
         );
       }
 
-      // Fix #5: removed unused commitShas Set
-
       // Fix #10: track failed lookups
       let failedLookups = 0;
 
-      // Collect PRs associated with each commit
+      // Collect PRs associated with each commit; track which SHAs have a merged PR
       const prMap = new Map<number, GitHubPR>();
+      const commitShasWithPR = new Set<string>();
 
       // Fix #2: batchAsync instead of Promise.all
       await batchAsync(comparison.commits, async (commit) => {
@@ -350,8 +349,11 @@ server.registerTool(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
           );
           for (const pr of prs) {
-            if (pr.merged_at !== null && !prMap.has(pr.number)) {
-              prMap.set(pr.number, pr);
+            if (pr.merged_at !== null) {
+              commitShasWithPR.add(commit.sha);
+              if (!prMap.has(pr.number)) {
+                prMap.set(pr.number, pr);
+              }
             }
           }
         } catch (err) {
@@ -414,6 +416,25 @@ server.registerTool(
         categories[pr.category].push(pr);
       }
 
+      // Bug fix: categorize commits that have no associated merged PR (direct pushes)
+      const directCommits = comparison.commits.filter((c) => !commitShasWithPR.has(c.sha));
+      const directCommitObjects = directCommits.map((commit) => {
+        const firstLine = commit.commit.message.split("\n")[0].trim();
+        const category = categorizePRByLabels([], firstLine);
+        const obj = {
+          sha: commit.sha.slice(0, 8),
+          sha_full: commit.sha,
+          message: firstLine,
+          author: commit.author?.login ?? commit.commit.author.name,
+          committed_at: commit.commit.author.date,
+          commit_url: commit.html_url,
+          category,
+          is_direct_commit: true,
+        };
+        categories[category].push(obj as unknown as typeof enrichedPRs[0]);
+        return obj;
+      });
+
       // Fix #13: stats already had other; keeping it consistent
       const result: Record<string, unknown> = {
         repository: `${owner}/${repo}`,
@@ -429,6 +450,7 @@ server.registerTool(
           chores: categories.chore.length,
           dependencies: categories.dependencies.length,
           other: categories.other.length,
+          direct_commits: directCommitObjects.length,
         },
         categorized: categories,
       };
@@ -552,9 +574,13 @@ server.registerTool(
       const dependencies = allPRs.filter((pr) => pr.category === "dependencies");
       const other = allPRs.filter((pr) => pr.category === "other");
 
-      // Fix #3: guard additions/deletions with ?? 0
-      const totalAdditions = allPRs.reduce((sum, pr) => sum + (pr.additions ?? 0), 0);
-      const totalDeletions = allPRs.reduce((sum, pr) => sum + (pr.deletions ?? 0), 0);
+      // Bug fix: fall back to file-level additions/deletions when no PRs exist (direct pushes)
+      const totalAdditions = allPRs.length > 0
+        ? allPRs.reduce((sum, pr) => sum + (pr.additions ?? 0), 0)
+        : (comparison.files ?? []).reduce((sum, f) => sum + (f.additions ?? 0), 0);
+      const totalDeletions = allPRs.length > 0
+        ? allPRs.reduce((sum, pr) => sum + (pr.deletions ?? 0), 0)
+        : (comparison.files ?? []).reduce((sum, f) => sum + (f.deletions ?? 0), 0);
       const totalFilesChanged = comparison.files?.length ?? 0;
 
       const allLinkedIssues = Array.from(
