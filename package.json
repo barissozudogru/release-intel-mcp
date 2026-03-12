@@ -1,0 +1,47 @@
+{
+  "name": "@barissozudogru/release-intel-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that generates intelligent release notes from GitHub data by correlating commits, PRs, issues, and authors between git refs",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "release-intel-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "mcp",
+    "release-notes",
+    "changelog",
+    "github",
+    "typescript",
+    "developer-tools",
+    "model-context-protocol"
+  ],
+  "author": "barissozudogru",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/barissozudogru/release-intel-mcp.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.8.3"
+  }
+}
