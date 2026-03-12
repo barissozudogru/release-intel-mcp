@@ -1,0 +1,21 @@
+name: release-intel-mcp
+description: Generate release intelligence from Git history - changelog, PR correlation, contributor stats
+author: barissozudogru
+license: MIT
+repository: https://github.com/barissozudogru/release-intel-mcp
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      GITHUB_TOKEN:
+        type: string
+        description: GitHub personal access token
+    required:
+      - GITHUB_TOKEN
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@barissozudogru/release-intel-mcp'],
+      env: { GITHUB_TOKEN: config.GITHUB_TOKEN }
+    })

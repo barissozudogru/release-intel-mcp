@@ -1,71 +1,8 @@
-<div align="center">
-
 # release-intel-mcp
 
-**Release Intelligence Engine for Claude**
+An MCP server that generates release intelligence from GitHub repository data. It correlates commits, pull requests, issues, and contributors between any two git refs and returns structured context ready for AI synthesis into release notes, changelogs, and release summaries.
 
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)
-![Node](https://img.shields.io/badge/Node-%3E%3D18-green?logo=node.js)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-![MCP](https://img.shields.io/badge/MCP-compatible-purple)
-
-</div>
-
----
-
-## What It Does
-
-`release-intel-mcp` is a Model Context Protocol server that pre-processes GitHub repository data so Claude can synthesize high-quality, intelligent release notes. It correlates commits, pull requests, issues, and authors between any two git refs — giving Claude a rich, structured context object rather than raw git log output.
-
-Instead of pasting a raw `git log` into Claude, you point this server at your repository and refs, and it returns:
-
-- Every commit enriched with its associated PR title, labels, and body summary
-- Merged PRs automatically categorized by label (breaking change, feature, fix, docs, chore, dependencies)
-- Linked GitHub issues extracted from PR bodies
-- Contributor statistics (commits and PRs per author)
-- Aggregate stats: total commits, files changed, lines added/deleted, PRs merged
-
----
-
-## Setup for Claude Desktop
-
-### 1. Install or configure the package
-
-```bash
-npm install -g @barissozudogru/release-intel-mcp
-```
-
-Or reference it directly via `npx` in the config.
-
-### 2. Add to your Claude Desktop config
-
-Open `~/Library/Application Support/Claude/claude_desktop_config.json` and add:
-
-```json
-{
-  "mcpServers": {
-    "release-intel-mcp": {
-      "command": "npx",
-      "args": ["-y", "@barissozudogru/release-intel-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "ghp_your_personal_access_token_here"
-      }
-    }
-  }
-}
-```
-
-### 3. GitHub Token requirements
-
-The token needs the following scopes:
-
-- `repo` (read access to repositories, pull requests, issues)
-
-Generate one at: https://github.com/settings/tokens
-
-### 4. Restart Claude Desktop
-
-After saving the config, restart Claude Desktop. You should see `release-intel-mcp` listed under connected MCP servers.
+Compatible with: Claude Desktop | Claude Code | Cursor | Windsurf | VS Code | Cline | Continue | Zed | JetBrains | ChatGPT
 
 ---
 
@@ -73,131 +10,273 @@ After saving the config, restart Claude Desktop. You should see `release-intel-m
 
 ### `get_changes_between_refs`
 
-Get all commits between two git refs enriched with PR and author data.
+Get all commits between two git refs enriched with associated PR metadata, author information, and linked issues.
 
-**Input:**
-
-| Field   | Type   | Description                                |
-|---------|--------|--------------------------------------------|
-| `owner` | string | GitHub repository owner or organization   |
-| `repo`  | string | GitHub repository name                     |
-| `base`  | string | Base ref (older tag, branch, or SHA)       |
-| `head`  | string | Head ref (newer tag, branch, or SHA)       |
-
-**Example output (truncated):**
-
-```json
-{
-  "repository": "acme/my-app",
-  "base": "v1.2.0",
-  "head": "v1.3.0",
-  "total_commits": 12,
-  "commits": [
-    {
-      "sha": "a1b2c3d4",
-      "message": "feat: add dark mode toggle",
-      "author_login": "jsmith",
-      "pr_number": 142,
-      "pr_title": "Add dark mode support",
-      "pr_labels": ["feature", "frontend"],
-      "pr_body_summary": "Implements a dark/light mode toggle persisted to localStorage.",
-      "linked_issues": [98, 103]
-    }
-  ]
-}
-```
-
----
+| Field   | Type   | Description                              |
+|---------|--------|------------------------------------------|
+| `owner` | string | GitHub repository owner or organization |
+| `repo`  | string | GitHub repository name                   |
+| `base`  | string | Base ref (older tag, branch, or SHA)     |
+| `head`  | string | Head ref (newer tag, branch, or SHA)     |
 
 ### `get_pull_requests_in_range`
 
-Get all merged PRs between two refs, categorized by label with full metadata.
+Get all merged PRs between two refs, automatically categorized by label into: `breaking`, `feature`, `fix`, `docs`, `chore`, `dependencies`, `other`.
 
-**Input:** same as `get_changes_between_refs`
+Input fields are identical to `get_changes_between_refs`.
 
-**Categories:** `breaking`, `feature`, `fix`, `docs`, `chore`, `dependencies`, `other`
+### `get_release_summary`
 
-**Example output (truncated):**
+Generate a comprehensive structured release context object combining commit data, PR metadata, linked issues, contributor list, and aggregate statistics.
+
+| Field      | Type   | Description                     |
+|------------|--------|---------------------------------|
+| `owner`    | string | GitHub repository owner         |
+| `repo`     | string | GitHub repository name          |
+| `from_tag` | string | Previous release tag (base)     |
+| `to_tag`   | string | New release tag or HEAD         |
+
+---
+
+## Setup
+
+All options require a GitHub personal access token with `repo` read access.
+Generate one at: https://github.com/settings/tokens
+
+---
+
+### Option A: stdio (local process)
+
+The standard approach — the MCP client spawns the server as a local subprocess.
+
+#### Claude Desktop
+
+Config file: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 ```json
 {
-  "repository": "acme/my-app",
-  "total_prs": 8,
-  "stats": {
-    "breaking": 0,
-    "features": 3,
-    "fixes": 4,
-    "docs": 1
-  },
-  "categorized": {
-    "feature": [
-      {
-        "number": 142,
-        "title": "Add dark mode support",
-        "author": "jsmith",
-        "merged_at": "2026-03-10T14:22:00Z",
-        "labels": ["feature"],
-        "changed_files": 7
+  "mcpServers": {
+    "release-intel": {
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_token"
       }
-    ]
+    }
+  }
+}
+```
+
+#### Claude Code
+
+```bash
+claude mcp add release-intel -e GITHUB_TOKEN=ghp_your_token -- npx -y @barissozudogru/release-intel-mcp
+```
+
+#### Cursor
+
+Config file: `~/.cursor/mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "release-intel": {
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_token"
+      }
+    }
+  }
+}
+```
+
+#### Windsurf
+
+Config file: `~/.codeium/windsurf/mcp_config.json`
+
+```json
+{
+  "mcpServers": {
+    "release-intel": {
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_token"
+      }
+    }
+  }
+}
+```
+
+#### VS Code + Copilot
+
+Config file: `.vscode/mcp.json`
+
+```json
+{
+  "servers": {
+    "release-intel": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_token"
+      }
+    }
+  }
+}
+```
+
+#### Cline
+
+Config file: `~/.cline/mcp_settings.json` (or via the Cline extension settings UI)
+
+```json
+{
+  "mcpServers": {
+    "release-intel": {
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_token"
+      }
+    }
+  }
+}
+```
+
+#### Continue.dev
+
+Config file: `~/.continue/config.yaml`
+
+```yaml
+mcpServers:
+  - name: release-intel
+    command: npx
+    args:
+      - -y
+      - "@barissozudogru/release-intel-mcp"
+    env:
+      GITHUB_TOKEN: ghp_your_token
+```
+
+#### Zed
+
+Config file: `~/.config/zed/settings.json`
+
+```json
+{
+  "context_servers": {
+    "release-intel": {
+      "command": {
+        "path": "npx",
+        "args": ["-y", "@barissozudogru/release-intel-mcp"],
+        "env": {
+          "GITHUB_TOKEN": "ghp_your_token"
+        }
+      }
+    }
+  }
+}
+```
+
+#### JetBrains (AI Assistant plugin)
+
+```json
+{
+  "mcpServers": {
+    "release-intel": {
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_your_token"
+      }
+    }
   }
 }
 ```
 
 ---
 
-### `get_release_summary`
+### Option B: HTTP (remote / stateless)
 
-Generate a structured release summary ready for direct AI synthesis into release notes.
+Run the server as an HTTP endpoint. Useful for remote clients, shared team deployments, or clients that prefer URL-based connections.
 
-**Input:**
+```bash
+GITHUB_TOKEN=ghp_your_token npx @barissozudogru/release-intel-mcp --http
+```
 
-| Field      | Type   | Description                              |
-|------------|--------|------------------------------------------|
-| `owner`    | string | GitHub repository owner or organization |
-| `repo`     | string | GitHub repository name                   |
-| `from_tag` | string | Previous release tag (base)              |
-| `to_tag`   | string | New release tag or HEAD                  |
+By default this starts on port 3000. Set `PORT` to change it.
 
-**Example output (truncated):**
+#### Cursor (HTTP)
 
 ```json
 {
-  "repository": "acme/my-app",
-  "from_tag": "v1.2.0",
-  "to_tag": "v1.3.0",
-  "stats": {
-    "total_commits": 12,
-    "total_prs": 8,
-    "total_contributors": 4,
-    "lines_added": 847,
-    "lines_deleted": 203,
-    "breaking_changes": 0,
-    "new_features": 3,
-    "bug_fixes": 4
-  },
-  "contributors": [
-    { "login": "jsmith", "name": "Jane Smith", "commits": 6, "prs": 3 }
-  ],
-  "features": [...],
-  "fixes": [...],
-  "breaking_changes": []
+  "mcpServers": {
+    "release-intel": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
 }
 ```
 
+#### VS Code + Copilot (HTTP)
+
+```json
+{
+  "servers": {
+    "release-intel": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+#### Windsurf (HTTP)
+
+```json
+{
+  "mcpServers": {
+    "release-intel": {
+      "serverUrl": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+#### Continue.dev (HTTP)
+
+```yaml
+mcpServers:
+  - name: release-intel
+    type: streamable-http
+    url: http://localhost:3000/mcp
+```
+
+A health check endpoint is available at `GET /health`.
+
 ---
 
-## Usage Examples
+### Option C: Docker
 
-Once configured, ask Claude things like:
+```bash
+docker build -t release-intel-mcp .
+docker run -p 3000:3000 -e GITHUB_TOKEN=ghp_your_token release-intel-mcp
+```
 
-> "Using release-intel-mcp, generate release notes for acme/my-app between v1.2.0 and v1.3.0."
+The container starts in HTTP mode by default. The MCP endpoint is at `http://localhost:3000/mcp`.
 
-> "Get the release summary for barissozudogru/release-intel-mcp from v0.1.0 to HEAD, then write a CHANGELOG entry."
+---
 
-> "What breaking changes are between main and the v2.0.0 tag in my-org/api-server?"
+## Environment Variables
 
-> "Summarize the contributors and their work for the last release of acme/frontend."
+| Variable       | Required | Default | Description                               |
+|----------------|----------|---------|-------------------------------------------|
+| `GITHUB_TOKEN` | Yes      | —       | GitHub personal access token (repo scope) |
+| `TRANSPORT`    | No       | stdio   | Set to `http` to enable HTTP mode         |
+| `PORT`         | No       | 3000    | HTTP port (HTTP mode only)                |
 
 ---
 
