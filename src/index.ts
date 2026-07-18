@@ -574,14 +574,13 @@ server.registerTool(
       const dependencies = allPRs.filter((pr) => pr.category === "dependencies");
       const other = allPRs.filter((pr) => pr.category === "other");
 
-      // Bug fix: fall back to file-level additions/deletions when no PRs exist (direct pushes)
-      const totalAdditions = allPRs.length > 0
-        ? allPRs.reduce((sum, pr) => sum + (pr.additions ?? 0), 0)
-        : (comparison.files ?? []).reduce((sum, f) => sum + (f.additions ?? 0), 0);
-      const totalDeletions = allPRs.length > 0
-        ? allPRs.reduce((sum, pr) => sum + (pr.deletions ?? 0), 0)
-        : (comparison.files ?? []).reduce((sum, f) => sum + (f.deletions ?? 0), 0);
-      const totalFilesChanged = comparison.files?.length ?? 0;
+      // The /commits/{sha}/pulls endpoint does not return additions or deletions
+      // (see GitHubPR above), so summing pr.additions is always 0. Use the Compare
+      // API's per-file totals, which are populated.
+      const compareFiles = comparison.files ?? [];
+      const totalAdditions = compareFiles.reduce((sum, f) => sum + (f.additions ?? 0), 0);
+      const totalDeletions = compareFiles.reduce((sum, f) => sum + (f.deletions ?? 0), 0);
+      const totalFilesChanged = compareFiles.length;
 
       const allLinkedIssues = Array.from(
         new Set(allPRs.flatMap((pr) => pr.linked_issues))
