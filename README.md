@@ -1,18 +1,6 @@
-<p align="center">
-  <img src="./assets/banner-release-intel.svg" alt="release-intel-mcp" width="888" />
-</p>
-
-<p align="center">
-  <a href="https://www.npmjs.com/package/@barissozudogru/release-intel-mcp"><img alt="npm" src="https://img.shields.io/npm/v/@barissozudogru/release-intel-mcp?style=flat-square&color=8B5CF6&logo=npm&logoColor=white" /></a>
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" />
-  <img alt="Node" src="https://img.shields.io/badge/Node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white" />
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square" />
-  <img alt="MCP Server" src="https://img.shields.io/badge/MCP-Server-0F172A?style=flat-square" />
-</p>
+# release-intel-mcp
 
 An MCP server that generates release intelligence from GitHub repository data. It correlates commits, pull requests, issues, and contributors between any two git refs and returns structured context ready for AI synthesis into release notes, changelogs, and release summaries.
-
-Compatible with: Claude Desktop | Claude Code | Cursor | Windsurf | VS Code | Cline | Continue | Zed | JetBrains | ChatGPT
 
 ---
 
@@ -37,7 +25,7 @@ Input fields are identical to `get_changes_between_refs`.
 
 ### `get_release_summary`
 
-Generate a comprehensive structured release context object combining commit data, PR metadata, linked issues, contributor list, and aggregate statistics.
+Generate a structured release context object combining commit data, PR metadata, linked issues, contributor list, and aggregate statistics.
 
 | Field      | Type   | Description                     |
 |------------|--------|---------------------------------|
@@ -57,7 +45,7 @@ Generate one at: https://github.com/settings/tokens
 
 ### Option A: stdio (local process)
 
-The standard approach — the MCP client spawns the server as a local subprocess.
+The standard approach: the MCP client spawns the server as a local subprocess.
 
 #### Claude Desktop
 
@@ -284,7 +272,7 @@ The container starts in HTTP mode by default. The MCP endpoint is at `http://loc
 
 | Variable       | Required | Default | Description                               |
 |----------------|----------|---------|-------------------------------------------|
-| `GITHUB_TOKEN` | Yes      | —       | GitHub personal access token (repo scope) |
+| `GITHUB_TOKEN` | Yes      | -       | GitHub personal access token (repo scope) |
 | `TRANSPORT`    | No       | stdio   | Set to `http` to enable HTTP mode         |
 | `PORT`         | No       | 3000    | HTTP port (HTTP mode only)                |
 

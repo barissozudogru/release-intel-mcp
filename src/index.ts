@@ -101,7 +101,7 @@ interface GitHubCommit {
 }
 
 // Fix #3: additions/deletions/changed_files/review_comments are not returned by the
-// commits/{sha}/pulls summary endpoint — make them optional
+// commits/{sha}/pulls summary endpoint: make them optional
 interface GitHubPR {
   number: number;
   title: string;
@@ -147,8 +147,8 @@ server.registerTool(
       // Fix #11: validate owner/repo to safe characters
       owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
       repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
-      base: z.string().describe("Base ref (tag, branch, or commit SHA) — the older point"),
-      head: z.string().describe("Head ref (tag, branch, or commit SHA) — the newer point"),
+      base: z.string().describe("Base ref (tag, branch, or commit SHA), the older point"),
+      head: z.string().describe("Head ref (tag, branch, or commit SHA), the newer point"),
     }),
   },
   async ({ owner, repo, base, head }) => {
@@ -267,8 +267,8 @@ server.registerTool(
       // Fix #11: validate owner/repo
       owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
       repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
-      base: z.string().describe("Base ref (tag, branch, or commit SHA) — the older point"),
-      head: z.string().describe("Head ref (tag, branch, or commit SHA) — the newer point"),
+      base: z.string().describe("Base ref (tag, branch, or commit SHA), the older point"),
+      head: z.string().describe("Head ref (tag, branch, or commit SHA), the newer point"),
     }),
   },
   async ({ owner, repo, base, head }) => {
@@ -432,7 +432,7 @@ server.registerTool(
   {
     title: "Get Release Summary",
     description:
-      "Generate a comprehensive, structured release context object ready for AI synthesis into release notes. Combines commit data, PR metadata, linked issues, contributor list, and aggregate statistics for the range between two tags.",
+      "Generate a structured release context object ready for AI synthesis into release notes. Combines commit data, PR metadata, linked issues, contributor list, and aggregate statistics for the range between two tags.",
     inputSchema: z.object({
       // Fix #11: validate owner/repo
       owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
