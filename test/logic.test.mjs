@@ -43,6 +43,13 @@ test("categorizePRByLabels maps common GitHub labels", () => {
   assert.equal(categorizePRByLabels(["chore"]), "chore");
 });
 
+test("categorizePRByLabels avoids false positives from substrings", () => {
+  assert.equal(categorizePRByLabels(["suffix"]), "other");
+  assert.equal(categorizePRByLabels(["defeat"]), "other");
+  assert.equal(categorizePRByLabels(["docker"]), "other");
+  assert.equal(categorizePRByLabels(["deploy"]), "other");
+});
+
 test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "feat: add login"), "feature");
   assert.equal(categorizePRByLabels([], "fix: null crash"), "fix");
