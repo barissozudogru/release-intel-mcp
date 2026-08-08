@@ -31,12 +31,12 @@ export function summarizeBody(body: string | null, maxLength = 300): string {
 // Fix #14: conventional commit prefix fallback when no labels match
 export function categorizePRByLabels(labels: string[], commitMessage = ""): string {
   const lower = labels.map((l) => l.toLowerCase());
-  if (lower.some((l) => l.includes("breaking"))) return "breaking";
-  if (lower.some((l) => l.includes("feature") || l.includes("enhancement") || l.includes("feat"))) return "feature";
-  if (lower.some((l) => l.includes("fix") || l.includes("bug"))) return "fix";
-  if (lower.some((l) => l.includes("doc"))) return "docs";
-  if (lower.some((l) => l.includes("dep") || l.includes("depend"))) return "dependencies";
-  if (lower.some((l) => l.includes("chore") || l.includes("ci") || l.includes("refactor") || l.includes("test"))) return "chore";
+  if (lower.some((l) => /breaking/.test(l))) return "breaking";
+  if (lower.some((l) => /\b(?:feature|feat|enhancement)s?\b/.test(l))) return "feature";
+  if (lower.some((l) => /\b(?:fix(?:es)?|bug(?:s|fix|fixes)?|hotfix(?:es)?)\b/.test(l))) return "fix";
+  if (lower.some((l) => /\b(?:doc|docs|documentation)\b/.test(l))) return "docs";
+  if (lower.some((l) => /\b(?:dep|deps|dependency|dependencies)\b/.test(l))) return "dependencies";
+  if (lower.some((l) => /\b(?:chore|ci|refactor|test|tests|testing)\b/.test(l))) return "chore";
 
   // Fallback: parse conventional commit prefix from commit message
   if (commitMessage) {
