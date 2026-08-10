@@ -6,7 +6,7 @@ export function extractLinkedIssues(body: string | null): number[] {
   if (!body) return [];
   const patterns = [
     /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)/gi,
-    /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+https?:\/\/github\.com\/[^/]+\/[^/]+\/issues\/(\d+)/gi,
+    /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/(\d+)/gi,
   ];
   const issues = new Set<number>();
   for (const pattern of patterns) {

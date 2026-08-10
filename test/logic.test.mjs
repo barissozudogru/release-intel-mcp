@@ -18,10 +18,14 @@ test("extractLinkedIssues picks up close/fix/resolve keywords", () => {
   assert.deepEqual(extractLinkedIssues("CLOSES #5"), [5]);
 });
 
-test("extractLinkedIssues follows full issue URLs", () => {
+test("extractLinkedIssues follows full issue and PR URLs", () => {
   assert.deepEqual(
     extractLinkedIssues("resolves https://github.com/owner/repo/issues/42"),
     [42]
+  );
+  assert.deepEqual(
+    extractLinkedIssues("closes https://github.com/owner/repo/pull/123"),
+    [123]
   );
 });
 
