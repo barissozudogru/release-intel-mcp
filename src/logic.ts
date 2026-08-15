@@ -41,7 +41,7 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
   // Fallback: parse conventional commit prefix from commit message
   if (commitMessage) {
     const firstLine = commitMessage.split("\n")[0];
-    if (/BREAKING CHANGE:/i.test(firstLine) || /\w+!:/.test(firstLine)) return "breaking";
+    if (/BREAKING CHANGE:/i.test(firstLine) || /^[\w-]+(?:\([^)]+\))?!:/.test(firstLine)) return "breaking";
     if (/^feat(?:ure)?[:(]/i.test(firstLine)) return "feature";
     if (/^fix(?:bug)?[:(]/i.test(firstLine)) return "fix";
     if (/^docs?[:(]/i.test(firstLine)) return "docs";
