@@ -61,6 +61,7 @@ test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "chore: tidy scripts"), "chore");
   assert.equal(categorizePRByLabels([], "deps: bump zod"), "dependencies");
   assert.equal(categorizePRByLabels([], "feat!: drop legacy api"), "breaking");
+  assert.equal(categorizePRByLabels([], "feat(auth)!: remove old login"), "breaking");
 });
 
 test("categorizePRByLabels returns other when nothing matches", () => {
