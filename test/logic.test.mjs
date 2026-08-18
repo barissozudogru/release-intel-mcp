@@ -16,6 +16,8 @@ test("extractLinkedIssues picks up close/fix/resolve keywords", () => {
   assert.deepEqual(extractLinkedIssues("closes #123"), [123]);
   assert.deepEqual(extractLinkedIssues("Fixes #456 and resolves #789"), [456, 789]);
   assert.deepEqual(extractLinkedIssues("CLOSES #5"), [5]);
+  assert.deepEqual(extractLinkedIssues("fixes: #99"), [99]);
+  assert.deepEqual(extractLinkedIssues("Resolves: #100"), [100]);
 });
 
 test("extractLinkedIssues follows full issue and PR URLs", () => {
