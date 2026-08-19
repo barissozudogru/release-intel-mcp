@@ -328,6 +328,7 @@ server.registerTool(
         docs: [],
         chore: [],
         dependencies: [],
+        release: [],
         other: [],
       };
 
@@ -399,6 +400,7 @@ server.registerTool(
           docs: categories.docs.length,
           chores: categories.chore.length,
           dependencies: categories.dependencies.length,
+          releases: categories.release.length,
           other: categories.other.length,
           direct_commits: directCommitObjects.length,
         },
@@ -485,8 +487,12 @@ server.registerTool(
                 ...pr,
                 linked_issues: extractLinkedIssues(pr.body),
                 body_summary: summarizeBody(pr.body),
-                // Fix #14: pass commit message for conventional commit fallback
-                category: categorizePRByLabels(labels, firstCommitLine),
+                // Categorise by the PR's own title, matching
+                // get_pull_requests_in_range. Passing the associated commit
+                // message made a PR's category depend on which commit happened
+                // to surface it during iteration, so the two tools disagreed
+                // about the same PR.
+                category: categorizePRByLabels(labels, pr.title),
                 first_commit_message: firstCommitLine,
               });
               // Fix #7: PR count goes to PR author, not commit author
@@ -522,6 +528,7 @@ server.registerTool(
       const docs = allPRs.filter((pr) => pr.category === "docs");
       const chores = allPRs.filter((pr) => pr.category === "chore");
       const dependencies = allPRs.filter((pr) => pr.category === "dependencies");
+      const releases = allPRs.filter((pr) => pr.category === "release");
       const other = allPRs.filter((pr) => pr.category === "other");
 
       // The /commits/{sha}/pulls endpoint does not return additions or deletions
@@ -574,6 +581,7 @@ server.registerTool(
           docs_changes: docs.length,
           chores: chores.length,
           dependency_updates: dependencies.length,
+          release_prs: releases.length,
           other: other.length,
         },
         contributors,
@@ -583,6 +591,7 @@ server.registerTool(
         docs: docs.map(formatPR),
         chores: chores.map(formatPR),
         dependencies: dependencies.map(formatPR),
+        release_prs: releases.map(formatPR),
         other: other.map(formatPR),
         linked_issues: allLinkedIssues,
         all_commits: comparison.commits.map((c) => ({

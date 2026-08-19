@@ -6,3 +6,7 @@ dist/
 .env.*
 *.log
 .DS_Store
+
+# Local scratch files
+pr_body.txt
+test_regex.cjs
