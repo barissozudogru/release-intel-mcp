@@ -32,7 +32,8 @@
     "url": "https://github.com/barissozudogru/release-intel-mcp.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "engines": {
     "node": ">=18"
