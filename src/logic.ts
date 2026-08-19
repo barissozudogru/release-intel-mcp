@@ -31,6 +31,10 @@ export function summarizeBody(body: string | null, maxLength = 300): string {
 // Fix #14: conventional commit prefix fallback when no labels match
 export function categorizePRByLabels(labels: string[], commitMessage = ""): string {
   const lower = labels.map((l) => l.toLowerCase());
+  // Release PRs are bookkeeping, not change content. They are checked first
+  // because their bodies quote the whole changelog, which otherwise pulls them
+  // into whichever category the quoted text happens to match.
+  if (lower.some((l) => /\bautorelease\b|\brelease-please\b/.test(l))) return "release";
   if (lower.some((l) => /breaking/.test(l))) return "breaking";
   if (lower.some((l) => /\b(?:feature|feat|enhancement)s?\b/.test(l))) return "feature";
   if (lower.some((l) => /\b(?:fix(?:es)?|bug(?:s|fix|fixes)?|hotfix(?:es)?)\b/.test(l))) return "fix";
@@ -41,6 +45,11 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
   // Fallback: parse conventional commit prefix from commit message
   if (commitMessage) {
     const firstLine = commitMessage.split("\n")[0];
+    // Checked before the other prefixes so chore(release): reads as a release
+    // rather than a chore. The word boundary keeps "released" out.
+    if (/^release\b\s*[:(]/i.test(firstLine) || /^chore\(release\)/i.test(firstLine)) {
+      return "release";
+    }
     if (/BREAKING CHANGE:/i.test(firstLine) || /^[\w-]+(?:\([^)]+\))?!:/.test(firstLine)) return "breaking";
     if (/^feat(?:ure)?[:(]/i.test(firstLine)) return "feature";
     if (/^fix(?:bug)?[:(]/i.test(firstLine)) return "fix";
