@@ -94,3 +94,23 @@ test("summarizeBody strips HTML comments and normalizes line endings", () => {
   assert.ok(result.includes("\n"));
   assert.ok(!result.includes("\r"));
 });
+
+test("release PRs are categorized as releases, not fixes", () => {
+  // PR "release: 0.122.0" with label "autorelease: tagged" was reported as a
+  // bug fix by get_release_summary and as "other" by get_pull_requests_in_range.
+  assert.equal(
+    categorizePRByLabels(["autorelease: tagged"], "release: 0.122.0"),
+    "release"
+  );
+  assert.equal(categorizePRByLabels([], "release: 1.4.0"), "release");
+  assert.equal(categorizePRByLabels([], "chore(release): 1.4.0"), "release");
+  assert.equal(categorizePRByLabels(["release-please"], "anything"), "release");
+});
+
+test("ordinary PRs are unaffected by the release rule", () => {
+  assert.equal(categorizePRByLabels([], "fix: handle empty input"), "fix");
+  assert.equal(categorizePRByLabels([], "feat: add retry"), "feature");
+  assert.equal(categorizePRByLabels(["bug"], "something"), "fix");
+  // "released" is not "release"
+  assert.equal(categorizePRByLabels([], "docs: document released versions"), "docs");
+});
