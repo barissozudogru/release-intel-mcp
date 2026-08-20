@@ -1,0 +1,29 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.barissozudogru/release-intel",
+  "description": "Correlates commits, PRs, issues and contributors between two git refs for release notes.",
+  "repository": {
+    "url": "https://github.com/barissozudogru/release-intel-mcp",
+    "source": "github"
+  },
+  "version": "0.6.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@barissozudogru/release-intel-mcp",
+      "version": "0.6.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "GITHUB_TOKEN",
+          "description": "GitHub token with repository read access, used for the GitHub API.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
