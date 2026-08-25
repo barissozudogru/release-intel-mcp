@@ -1,17 +1,19 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.barissozudogru/release-intel",
+  "title": "Release Intel",
   "description": "Correlates commits, PRs, issues and contributors between two git refs for release notes.",
+  "websiteUrl": "https://petri-labs.org/tools/release-intel-mcp/",
   "repository": {
     "url": "https://github.com/barissozudogru/release-intel-mcp",
     "source": "github"
   },
-  "version": "0.6.1",
+  "version": "0.7.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@barissozudogru/release-intel-mcp",
-      "version": "0.6.1",
+      "version": "0.7.0",
       "transport": {
         "type": "stdio"
       },

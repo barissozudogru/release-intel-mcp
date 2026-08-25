@@ -1,115 +1,137 @@
+<p align="center">
+  <img src="./assets/banner-release-intel.svg" alt="release-intel-mcp" width="888" />
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@barissozudogru/release-intel-mcp"><img alt="npm version" src="https://img.shields.io/npm/v/@barissozudogru/release-intel-mcp?style=flat-square&color=8B5CF6"></a>
+  <a href="https://www.npmjs.com/package/@barissozudogru/release-intel-mcp"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@barissozudogru/release-intel-mcp?style=flat-square&color=8B5CF6"></a>
+  <a href="https://github.com/barissozudogru/release-intel-mcp/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/barissozudogru/release-intel-mcp/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://registry.modelcontextprotocol.io/v0.1/servers/io.github.barissozudogru%2Frelease-intel/versions/latest"><img alt="MCP Registry" src="https://img.shields.io/badge/MCP_Registry-listed-0F172A?style=flat-square"></a>
+  <a href="./LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/License-MIT-8B5CF6?style=flat-square"></a>
+</p>
+
 # release-intel-mcp
 
-An MCP server that generates release intelligence from GitHub repository data. It correlates commits, pull requests, issues, and contributors between any two git refs and returns structured context ready for AI synthesis into release notes, changelogs, and release summaries.
+Build release context from repository evidence instead of a blank prompt. The server compares two Git refs and correlates commits, merged pull requests, linked issues, labels, changed files, and contributors into a structured release record.
 
----
+[Tool page](https://petri-labs.org/tools/release-intel-mcp/) · [npm](https://www.npmjs.com/package/@barissozudogru/release-intel-mcp) · Listed in the official [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.barissozudogru%2Frelease-intel/versions/latest)
+
+## Start in one minute
+
+Create a fine-grained GitHub token with read-only access to the repositories you want to inspect. Repository contents and pull requests are sufficient for the current tools. No write permission is needed.
+
+```json
+{
+  "mcpServers": {
+    "release-intel": {
+      "command": "npx",
+      "args": ["-y", "@barissozudogru/release-intel-mcp"],
+      "env": {
+        "GITHUB_TOKEN": "your_read_only_token"
+      }
+    }
+  }
+}
+```
+
+Then ask the client for a bounded range:
+
+```text
+Use release-intel to build release evidence for owner/repository
+from v1.4.0 to v1.5.0. Separate merged PRs from direct commits
+and preserve links to the repository record.
+```
+
+The token stays in the local server process and is sent only to the GitHub API.
+
+## Proof on this repository
+
+A verified run against the stable range `v0.5.1...8a2f350` returned:
+
+```text
+Repository:        barissozudogru/release-intel-mcp
+Commits:           14
+Merged PRs:        1
+Files changed:     12
+Lines added:       286
+Lines deleted:     135
+Contributors:      1
+```
+
+The response also includes commit SHAs, messages, authors, pull request categories, linked issues, and warnings when GitHub truncates or fails part of the evidence lookup.
+
+If this saves you time, consider [starring the repository](https://github.com/barissozudogru/release-intel-mcp). It helps other developers find it.
 
 ## Tools
 
-### `get_changes_between_refs`
+| Tool | What it returns |
+|---|---|
+| `get_changes_between_refs` | Commits enriched with merged pull request metadata and linked issues |
+| `get_pull_requests_in_range` | Merged pull requests grouped as breaking, feature, fix, docs, chore, dependency, release, or other |
+| `get_release_summary` | A complete release evidence object with aggregate statistics and contributors |
 
-Get all commits between two git refs enriched with associated PR metadata, author information, and linked issues.
+The categorization uses labels and conventional title signals. Repository labels, issue links, and pull request hygiene directly affect the result. The server provides evidence and structure; the final release narrative still needs review.
 
-| Field   | Type   | Description                              |
-|---------|--------|------------------------------------------|
-| `owner` | string | GitHub repository owner or organization |
-| `repo`  | string | GitHub repository name                   |
-| `base`  | string | Base ref (older tag, branch, or SHA)     |
-| `head`  | string | Head ref (newer tag, branch, or SHA)     |
+## Release report command
 
-### `get_pull_requests_in_range`
-
-Get all merged PRs between two refs, automatically categorized by label into: `breaking`, `feature`, `fix`, `docs`, `chore`, `dependencies`, `other`.
-
-Input fields are identical to `get_changes_between_refs`.
-
-### `get_release_summary`
-
-Generate a structured release context object combining commit data, PR metadata, linked issues, contributor list, and aggregate statistics.
-
-| Field      | Type   | Description                     |
-|------------|--------|---------------------------------|
-| `owner`    | string | GitHub repository owner         |
-| `repo`     | string | GitHub repository name          |
-| `from_tag` | string | Previous release tag (base)     |
-| `to_tag`   | string | New release tag or HEAD         |
-
----
-
-## Setup
-
-All options require a GitHub personal access token with `repo` read access.
-Generate one at: https://github.com/settings/tokens
-
----
-
-### Option A: stdio (local process)
-
-The standard approach: the MCP client spawns the server as a local subprocess.
-
-#### Claude Desktop
-
-Config file: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "command": "npx",
-      "args": ["-y", "@barissozudogru/release-intel-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "ghp_your_token"
-      }
-    }
-  }
-}
-```
-
-#### Claude Code
+The package includes a terminal command that produces Markdown by default:
 
 ```bash
-claude mcp add release-intel -e GITHUB_TOKEN=ghp_your_token -- npx -y @barissozudogru/release-intel-mcp
+GITHUB_TOKEN=your_read_only_token \
+  npx --yes --package @barissozudogru/release-intel-mcp \
+  release-intel-report owner/repository v1.4.0 v1.5.0
 ```
 
-#### Cursor
+Use `--json` when another tool will consume the report:
 
-Config file: `~/.cursor/mcp.json`
-
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "command": "npx",
-      "args": ["-y", "@barissozudogru/release-intel-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "ghp_your_token"
-      }
-    }
-  }
-}
+```bash
+release-intel-report owner/repository v1.4.0 v1.5.0 --json
 ```
 
-#### Windsurf
+## GitHub Action
 
-Config file: `~/.codeium/windsurf/mcp_config.json`
+Attach the evidence report to the workflow summary before publishing a release:
 
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "command": "npx",
-      "args": ["-y", "@barissozudogru/release-intel-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "ghp_your_token"
-      }
-    }
-  }
-}
+```yaml
+name: Release evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_ref:
+        required: true
+      to_ref:
+        required: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: barissozudogru/release-intel-mcp@v0.7.0
+        with:
+          from-ref: ${{ inputs.from_ref }}
+          to-ref: ${{ inputs.to_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-#### VS Code + Copilot
+This action reads repository data and writes Markdown to the job summary. It does not publish a release or modify repository content.
 
-Config file: `.vscode/mcp.json`
+## Client setup
+
+<details>
+<summary>Claude Desktop, Cursor, Windsurf, Cline, and similar clients</summary>
+
+Use the stdio configuration from the quickstart. The server entry is identical across these clients even when their config file locations differ.
+
+</details>
+
+<details>
+<summary>VS Code with Copilot</summary>
+
+Create `.vscode/mcp.json`:
 
 ```json
 {
@@ -119,177 +141,62 @@ Config file: `.vscode/mcp.json`
       "command": "npx",
       "args": ["-y", "@barissozudogru/release-intel-mcp"],
       "env": {
-        "GITHUB_TOKEN": "ghp_your_token"
+        "GITHUB_TOKEN": "your_read_only_token"
       }
     }
   }
 }
 ```
 
-#### Cline
+</details>
 
-Config file: `~/.cline/mcp_settings.json` (or via the Cline extension settings UI)
-
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "command": "npx",
-      "args": ["-y", "@barissozudogru/release-intel-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "ghp_your_token"
-      }
-    }
-  }
-}
-```
-
-#### Continue.dev
-
-Config file: `~/.continue/config.yaml`
-
-```yaml
-mcpServers:
-  - name: release-intel
-    command: npx
-    args:
-      - -y
-      - "@barissozudogru/release-intel-mcp"
-    env:
-      GITHUB_TOKEN: ghp_your_token
-```
-
-#### Zed
-
-Config file: `~/.config/zed/settings.json`
-
-```json
-{
-  "context_servers": {
-    "release-intel": {
-      "command": {
-        "path": "npx",
-        "args": ["-y", "@barissozudogru/release-intel-mcp"],
-        "env": {
-          "GITHUB_TOKEN": "ghp_your_token"
-        }
-      }
-    }
-  }
-}
-```
-
-#### JetBrains (AI Assistant plugin)
-
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "command": "npx",
-      "args": ["-y", "@barissozudogru/release-intel-mcp"],
-      "env": {
-        "GITHUB_TOKEN": "ghp_your_token"
-      }
-    }
-  }
-}
-```
-
----
-
-### Option B: HTTP (remote / stateless)
-
-Run the server as an HTTP endpoint. Useful for remote clients, shared team deployments, or clients that prefer URL-based connections.
+<details>
+<summary>Streamable HTTP</summary>
 
 ```bash
-GITHUB_TOKEN=ghp_your_token npx @barissozudogru/release-intel-mcp --http
+GITHUB_TOKEN=your_read_only_token \
+  npx @barissozudogru/release-intel-mcp --http
 ```
 
-By default this starts on port 3000. Set `PORT` to change it.
+The MCP endpoint is `http://localhost:3000/mcp` and the health endpoint is `http://localhost:3000/health`. Set `PORT` to change the port.
 
-#### Cursor (HTTP)
+</details>
 
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "url": "http://localhost:3000/mcp"
-    }
-  }
-}
-```
-
-#### VS Code + Copilot (HTTP)
-
-```json
-{
-  "servers": {
-    "release-intel": {
-      "type": "http",
-      "url": "http://localhost:3000/mcp"
-    }
-  }
-}
-```
-
-#### Windsurf (HTTP)
-
-```json
-{
-  "mcpServers": {
-    "release-intel": {
-      "serverUrl": "http://localhost:3000/mcp"
-    }
-  }
-}
-```
-
-#### Continue.dev (HTTP)
-
-```yaml
-mcpServers:
-  - name: release-intel
-    type: streamable-http
-    url: http://localhost:3000/mcp
-```
-
-A health check endpoint is available at `GET /health`.
-
----
-
-### Option C: Docker
+<details>
+<summary>Docker</summary>
 
 ```bash
 docker build -t release-intel-mcp .
-docker run -p 3000:3000 -e GITHUB_TOKEN=ghp_your_token release-intel-mcp
+docker run -p 3000:3000 \
+  -e GITHUB_TOKEN=your_read_only_token \
+  release-intel-mcp
 ```
 
-The container starts in HTTP mode by default. The MCP endpoint is at `http://localhost:3000/mcp`.
+Connect an HTTP client to `http://localhost:3000/mcp`.
 
----
+</details>
 
-## Environment Variables
-
-| Variable       | Required | Default | Description                               |
-|----------------|----------|---------|-------------------------------------------|
-| `GITHUB_TOKEN` | Yes      | -       | GitHub personal access token (repo scope) |
-| `TRANSPORT`    | No       | stdio   | Set to `http` to enable HTTP mode         |
-| `PORT`         | No       | 3000    | HTTP port (HTTP mode only)                |
-
----
-
-## Local Development
+## Local development
 
 ```bash
-git clone https://github.com/barissozudogru/release-intel-mcp.git
-cd release-intel-mcp
 npm install
+npm test
 npm run build
-GITHUB_TOKEN=ghp_... node dist/index.js
+GITHUB_TOKEN=your_read_only_token node dist/index.js
 ```
 
----
+Requirements: Node.js 18 or newer.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the development workflow.
+
+## Security and limits
+
+- Use a fine-grained, read-only token restricted to the required repositories.
+- The server never needs permission to write releases, issues, or pull requests.
+- GitHub's compare endpoint limits very large ranges. The response reports truncation.
+- Unlinked direct commits remain visible but cannot inherit pull request metadata.
+- Release categories are evidence-backed heuristics, not editorial conclusions.
 
 ## License
 
-MIT
+[MIT](./LICENSE)

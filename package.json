@@ -1,12 +1,13 @@
 {
   "name": "@barissozudogru/release-intel-mcp",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "mcpName": "io.github.barissozudogru/release-intel",
   "description": "MCP server that generates intelligent release notes from GitHub data by correlating commits, PRs, issues, and authors between git refs",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "release-intel-mcp": "dist/index.js"
+    "release-intel-mcp": "dist/index.js",
+    "release-intel-report": "dist/report.js"
   },
   "files": [
     "dist"
@@ -32,6 +33,10 @@
     "type": "git",
     "url": "https://github.com/barissozudogru/release-intel-mcp.git"
   },
+  "homepage": "https://petri-labs.org/tools/release-intel-mcp/",
+  "bugs": {
+    "url": "https://github.com/barissozudogru/release-intel-mcp/issues"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
@@ -40,9 +45,9 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "express": "^5.2.1",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

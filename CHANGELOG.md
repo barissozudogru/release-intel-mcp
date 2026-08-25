@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-08-26
+
+### Added
+
+- `release-intel-report` command for producing an auditable Markdown or JSON report between two Git refs.
+- Reusable composite GitHub Action that writes release evidence to the workflow summary.
+- Continuous integration for pushes and pull requests.
+- Petri Labs discovery page, download badges, and a repository social preview.
+- MCP Registry metadata and automated OIDC publication with the focused tool page and current package version.
+
+### Changed
+
+- The package homepage now points to the focused Petri Labs tool page while source and issues remain on GitHub.
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

@@ -1,0 +1,56 @@
+name: Release Intel evidence report
+description: Build an auditable release report from commits, pull requests, issues, and contributors between two Git refs.
+author: Petri Labs
+
+branding:
+  icon: upload-cloud
+  color: purple
+
+inputs:
+  repository:
+    description: GitHub repository in owner/name form. Defaults to the current repository.
+    required: false
+    default: ""
+  from-ref:
+    description: Older tag, branch, or commit SHA.
+    required: true
+  to-ref:
+    description: Newer tag, branch, or commit SHA.
+    required: true
+  token:
+    description: Read-only GitHub token used to inspect repository data.
+    required: true
+
+outputs:
+  report:
+    description: The generated Markdown release evidence report.
+    value: ${{ steps.report.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - id: report
+      name: Build release evidence
+      shell: bash
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_FROM_REF: ${{ inputs.from-ref }}
+        INPUT_TO_REF: ${{ inputs.to-ref }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        repository="$INPUT_REPOSITORY"
+        if [ -z "$repository" ]; then
+          repository="$GITHUB_REPOSITORY"
+        fi
+        package_version="$(node -p "require('$GITHUB_ACTION_PATH/package.json').version")"
+        report="$(npx --yes --package "@barissozudogru/release-intel-mcp@${package_version}" release-intel-report "$repository" "$INPUT_FROM_REF" "$INPUT_TO_REF")"
+
+        delimiter="RELEASE_INTEL_REPORT_$(date +%s%N)"
+        {
+          echo "report<<${delimiter}"
+          printf '%s\n' "$report"
+          echo "${delimiter}"
+        } >> "$GITHUB_OUTPUT"
+
+        printf '%s\n' "$report" >> "$GITHUB_STEP_SUMMARY"
+        printf '%s\n' "$report"
