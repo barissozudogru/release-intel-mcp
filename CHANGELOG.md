@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2] - 2026-08-26
+
+### Fixed
+
+- MCP Registry metadata now pins the matching npm package version.
+- Release publication now tolerates existing package versions and retries registry propagation.
+
 ## [0.7.1] - 2026-08-26
 
 ### Fixed

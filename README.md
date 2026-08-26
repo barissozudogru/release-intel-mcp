@@ -110,7 +110,7 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: barissozudogru/release-intel-mcp@v0.7.1
+      - uses: barissozudogru/release-intel-mcp@v0.7.2
         with:
           from-ref: ${{ inputs.from_ref }}
           to-ref: ${{ inputs.to_ref }}

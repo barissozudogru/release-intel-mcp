@@ -1,6 +1,6 @@
 {
   "name": "@barissozudogru/release-intel-mcp",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "mcpName": "io.github.barissozudogru/release-intel",
   "description": "MCP server that generates intelligent release notes from GitHub data by correlating commits, PRs, issues, and authors between git refs",
   "type": "module",
