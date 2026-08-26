@@ -28,8 +28,11 @@ interface ReleaseContext {
 }
 
 const rawArgs = process.argv.slice(2);
+const helpRequested = rawArgs.includes("--help") || rawArgs.includes("-h");
 const jsonMode = rawArgs.includes("--json");
-const args = rawArgs.filter((arg) => arg !== "--json");
+const args = rawArgs.filter(
+  (arg) => arg !== "--json" && arg !== "--help" && arg !== "-h"
+);
 const [repository, fromRef, toRef] = args;
 
 function firstText(content: unknown): string | undefined {
@@ -49,20 +52,29 @@ function firstText(content: unknown): string | undefined {
   return undefined;
 }
 
-function usage(): never {
-  process.stderr.write(
-    "Usage: release-intel-report <owner/repository> <from-ref> <to-ref> [--json]\n"
-  );
-  process.exit(1);
+function usage(exitCode: number): never {
+  const output = [
+    "Usage: release-intel-report <owner/repository> <from-ref> <to-ref> [--json]",
+    "",
+    "Source and documentation:",
+    "  https://github.com/barissozudogru/release-intel-mcp",
+    "",
+  ].join("\n");
+  (exitCode === 0 ? process.stdout : process.stderr).write(output);
+  process.exit(exitCode);
+}
+
+if (helpRequested) {
+  usage(0);
 }
 
 if (!repository || !fromRef || !toRef || !repository.includes("/")) {
-  usage();
+  usage(1);
 }
 
 const [owner, repo] = repository.split("/", 2);
 if (!owner || !repo) {
-  usage();
+  usage(1);
 }
 
 function renderItems(title: string, items: ReleaseItem[]): string[] {

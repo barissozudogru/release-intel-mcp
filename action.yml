@@ -43,7 +43,7 @@ runs:
           repository="$GITHUB_REPOSITORY"
         fi
         package_version="$(node -p "require('$GITHUB_ACTION_PATH/package.json').version")"
-        report="$(npx --yes --package "@barissozudogru/release-intel-mcp@${package_version}" release-intel-report "$repository" "$INPUT_FROM_REF" "$INPUT_TO_REF")"
+        report="$(npm exec --yes --package="@barissozudogru/release-intel-mcp@${package_version}" -- release-intel-report "$repository" "$INPUT_FROM_REF" "$INPUT_TO_REF")"
 
         delimiter="RELEASE_INTEL_REPORT_$(date +%s%N)"
         {

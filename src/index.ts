@@ -624,6 +624,21 @@ server.registerTool(
 );
 
 async function main() {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) {
+    process.stdout.write([
+      'release-intel-mcp - auditable GitHub release evidence over MCP',
+      '',
+      'Usage:',
+      '  release-intel-mcp            Start the stdio MCP server',
+      '  release-intel-mcp --http     Start the HTTP transport',
+      '',
+      'Source and documentation:',
+      '  https://github.com/barissozudogru/release-intel-mcp',
+      '',
+    ].join('\n'));
+    return;
+  }
+
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
     process.stderr.write('Warning: GITHUB_TOKEN not set. All tool calls will fail.\n');
