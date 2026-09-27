@@ -6,7 +6,12 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 import { createRequire } from "node:module";
 import express from "express";
-import { extractLinkedIssues, summarizeBody, categorizePRByLabels } from "./logic.js";
+import {
+  extractLinkedIssues,
+  summarizeBody,
+  categorizePRByLabels,
+  calculateFileStats,
+} from "./logic.js";
 
 const require = createRequire(import.meta.url);
 const { version: VERSION } = require("../package.json");
@@ -533,11 +538,16 @@ server.registerTool(
 
       // The /commits/{sha}/pulls endpoint does not return additions or deletions
       // (see GitHubPR above), so summing pr.additions is always 0. Use the Compare
-      // API's per-file totals, which are populated.
+      // API per-file totals, which are populated. When the comparison reaches the
+      // GitHub API limit of 300 files, the file list is truncated, so omit file
+      // and line statistics rather than returning partial counts.
       const compareFiles = comparison.files ?? [];
-      const totalAdditions = compareFiles.reduce((sum, f) => sum + (f.additions ?? 0), 0);
-      const totalDeletions = compareFiles.reduce((sum, f) => sum + (f.deletions ?? 0), 0);
-      const totalFilesChanged = compareFiles.length;
+      const fileStats = calculateFileStats(compareFiles);
+      if (fileStats.truncated) {
+        warnings.push(
+          `Warning: File comparison was truncated at ${compareFiles.length} files due to GitHub API limits; file and line statistics are omitted.`
+        );
+      }
 
       const allLinkedIssues = Array.from(
         new Set(allPRs.flatMap((pr) => pr.linked_issues))
@@ -570,10 +580,14 @@ server.registerTool(
         stats: {
           total_commits: comparison.total_commits,
           total_prs: allPRs.length,
-          total_files_changed: totalFilesChanged,
+          ...(fileStats.truncated
+            ? {}
+            : {
+                total_files_changed: fileStats.total_files_changed,
+                lines_added: fileStats.lines_added,
+                lines_deleted: fileStats.lines_deleted,
+              }),
           total_contributors: contributors.length,
-          lines_added: totalAdditions,
-          lines_deleted: totalDeletions,
           linked_issues: allLinkedIssues.length,
           breaking_changes: breaking.length,
           new_features: features.length,

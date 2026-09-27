@@ -5,6 +5,7 @@ import {
   extractLinkedIssues,
   summarizeBody,
   categorizePRByLabels,
+  calculateFileStats,
 } from "../dist/logic.js";
 
 test("extractLinkedIssues returns an empty array for null or empty bodies", () => {
@@ -113,4 +114,43 @@ test("ordinary PRs are unaffected by the release rule", () => {
   assert.equal(categorizePRByLabels(["bug"], "something"), "fix");
   // "released" is not "release"
   assert.equal(categorizePRByLabels([], "docs: document released versions"), "docs");
+});
+
+test("calculateFileStats computes addition, deletion, and file counts when under the limit", () => {
+  const files = [
+    { filename: "a.ts", additions: 10, deletions: 2 },
+    { filename: "b.ts", additions: 5, deletions: 1 },
+  ];
+  const stats = calculateFileStats(files);
+  assert.equal(stats.truncated, false);
+  assert.equal(stats.total_files_changed, 2);
+  assert.equal(stats.lines_added, 15);
+  assert.equal(stats.lines_deleted, 3);
+});
+
+test("calculateFileStats flags truncation and omits counts when files reach or exceed the limit", () => {
+  const files = Array.from({ length: 300 }, (_, i) => ({
+    filename: `file_${i}.txt`,
+    additions: 10,
+    deletions: 5,
+  }));
+  const stats = calculateFileStats(files);
+  assert.equal(stats.truncated, true);
+  assert.equal(stats.total_files_changed, undefined);
+  assert.equal(stats.lines_added, undefined);
+  assert.equal(stats.lines_deleted, undefined);
+});
+
+test("calculateFileStats handles empty or null file lists", () => {
+  const empty = calculateFileStats([]);
+  assert.equal(empty.truncated, false);
+  assert.equal(empty.total_files_changed, 0);
+  assert.equal(empty.lines_added, 0);
+  assert.equal(empty.lines_deleted, 0);
+
+  const fromNull = calculateFileStats(null);
+  assert.equal(fromNull.truncated, false);
+  assert.equal(fromNull.total_files_changed, 0);
+  assert.equal(fromNull.lines_added, 0);
+  assert.equal(fromNull.lines_deleted, 0);
 });

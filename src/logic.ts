@@ -60,3 +60,38 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
 
   return "other";
 }
+
+export interface FileStatItem {
+  filename?: string;
+  status?: string;
+  changes?: number;
+  additions?: number;
+  deletions?: number;
+}
+
+export interface FileStats {
+  total_files_changed?: number;
+  lines_added?: number;
+  lines_deleted?: number;
+  truncated: boolean;
+}
+
+// Calculate file and line modification statistics from compare files. The GitHub
+// compare API caps the files array at 300 items without pagination. When the
+// limit is reached, statistics are omitted to avoid reporting partial sums.
+export function calculateFileStats(
+  files: FileStatItem[] | null | undefined,
+  limit = 300
+): FileStats {
+  const list = files ?? [];
+  if (list.length >= limit) {
+    return { truncated: true };
+  }
+  return {
+    truncated: false,
+    total_files_changed: list.length,
+    lines_added: list.reduce((sum, f) => sum + (f.additions ?? 0), 0),
+    lines_deleted: list.reduce((sum, f) => sum + (f.deletions ?? 0), 0),
+  };
+}
+
