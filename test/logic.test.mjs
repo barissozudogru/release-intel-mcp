@@ -5,6 +5,9 @@ import {
   extractLinkedIssues,
   summarizeBody,
   categorizePRByLabels,
+  calculateFileStats,
+  formatStat,
+  renderMarkdown,
 } from "../dist/logic.js";
 
 test("extractLinkedIssues returns an empty array for null or empty bodies", () => {
@@ -114,3 +117,104 @@ test("ordinary PRs are unaffected by the release rule", () => {
   // "released" is not "release"
   assert.equal(categorizePRByLabels([], "docs: document released versions"), "docs");
 });
+
+test("calculateFileStats computes addition, deletion, and file counts when under the limit", () => {
+  const files = [
+    { filename: "a.ts", additions: 10, deletions: 2 },
+    { filename: "b.ts", additions: 5, deletions: 1 },
+  ];
+  const stats = calculateFileStats(files);
+  assert.equal(stats.truncated, false);
+  assert.equal(stats.total_files_changed, 2);
+  assert.equal(stats.lines_added, 15);
+  assert.equal(stats.lines_deleted, 3);
+});
+
+test("calculateFileStats flags truncation and omits counts when files reach or exceed the limit", () => {
+  const files = Array.from({ length: 300 }, (_, i) => ({
+    filename: `file_${i}.txt`,
+    additions: 10,
+    deletions: 5,
+  }));
+  const stats = calculateFileStats(files);
+  assert.equal(stats.truncated, true);
+  assert.equal(stats.total_files_changed, undefined);
+  assert.equal(stats.lines_added, undefined);
+  assert.equal(stats.lines_deleted, undefined);
+});
+
+test("calculateFileStats handles empty or null file lists", () => {
+  const empty = calculateFileStats([]);
+  assert.equal(empty.truncated, false);
+  assert.equal(empty.total_files_changed, 0);
+  assert.equal(empty.lines_added, 0);
+  assert.equal(empty.lines_deleted, 0);
+
+  const fromNull = calculateFileStats(null);
+  assert.equal(fromNull.truncated, false);
+  assert.equal(fromNull.total_files_changed, 0);
+  assert.equal(fromNull.lines_added, 0);
+  assert.equal(fromNull.lines_deleted, 0);
+});
+
+test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
+  assert.equal(formatStat(undefined), "N/A");
+  assert.equal(formatStat(null), "N/A");
+  assert.equal(formatStat(0), 0);
+  assert.equal(formatStat(42), 42);
+});
+
+test("renderMarkdown formats release evidence table with numbers when file statistics are present", () => {
+  const data = {
+    repository: "owner/repo",
+    from_tag: "v1.0.0",
+    to_tag: "v1.1.0",
+    stats: {
+      total_commits: 10,
+      total_prs: 2,
+      total_files_changed: 5,
+      lines_added: 120,
+      lines_deleted: 30,
+      total_contributors: 3,
+    },
+    contributors: [],
+    breaking_changes: [],
+    features: [],
+    fixes: [],
+    docs: [],
+    dependencies: [],
+    other: [],
+    all_commits: [],
+  };
+  const markdown = renderMarkdown(data);
+  assert.match(markdown, /\| 10 \| 2 \| 5 \| 120 \| 30 \| 3 \|/);
+});
+
+test("renderMarkdown handles omitted file statistics with N/A instead of misleading zeros", () => {
+  const data = {
+    repository: "owner/repo",
+    from_tag: "v1.0.0",
+    to_tag: "v2.0.0",
+    stats: {
+      total_commits: 500,
+      total_prs: 45,
+      total_contributors: 12,
+    },
+    contributors: [],
+    breaking_changes: [],
+    features: [],
+    fixes: [],
+    docs: [],
+    dependencies: [],
+    other: [],
+    all_commits: [],
+    warnings: [
+      "Warning: File comparison was truncated at 300 files due to GitHub API limits; file and line statistics are omitted.",
+    ],
+  };
+  const markdown = renderMarkdown(data);
+  assert.match(markdown, /\| 500 \| 45 \| N\/A \| N\/A \| N\/A \| 12 \|/);
+  assert.doesNotMatch(markdown, /\| 500 \| 45 \| 0 \| 0 \| 0 \| 12 \|/);
+  assert.match(markdown, /## Warnings/);
+});
+
