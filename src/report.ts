@@ -50,10 +50,11 @@ if (!repository || !fromRef || !toRef || !repository.includes("/")) {
   usage(1);
 }
 
-const [owner, repo] = repository.split("/", 2);
-if (!owner || !repo) {
+const repositoryParts = repository.split("/");
+if (repositoryParts.length !== 2 || !repositoryParts[0] || !repositoryParts[1]) {
   usage(1);
 }
+const [owner, repo] = repositoryParts;
 
 const client = new Client({ name: "release-intel-report", version: "1.0.0" });
 const serverPath = fileURLToPath(new URL("./index.js", import.meta.url));
