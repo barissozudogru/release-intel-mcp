@@ -218,3 +218,30 @@ test("renderMarkdown handles omitted file statistics with N/A instead of mislead
   assert.match(markdown, /## Warnings/);
 });
 
+test("renderMarkdown includes chore and release pull request evidence", () => {
+  const data = {
+    repository: "owner/repo",
+    from_tag: "v1.0.0",
+    to_tag: "v2.0.0",
+    stats: {},
+    contributors: [],
+    breaking_changes: [],
+    features: [],
+    fixes: [],
+    docs: [],
+    chores: [
+      { number: 7, title: "Update tooling", url: "https://example.test/7", author: "alice" },
+    ],
+    dependencies: [],
+    release_prs: [
+      { number: 8, title: "Release v2", url: "https://example.test/8", author: "bob" },
+    ],
+    other: [],
+    all_commits: [],
+  };
+
+  const markdown = renderMarkdown(data);
+  assert.match(markdown, /### Chores\n\n- \[#7\]\(https:\/\/example\.test\/7\) Update tooling by @alice/);
+  assert.match(markdown, /### Release pull requests\n\n- \[#8\]\(https:\/\/example\.test\/8\) Release v2 by @bob/);
+  assert.doesNotMatch(markdown, /No merged pull requests were associated/);
+});

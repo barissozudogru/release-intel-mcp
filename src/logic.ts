@@ -112,7 +112,9 @@ export interface ReleaseContext {
   features: ReleaseItem[];
   fixes: ReleaseItem[];
   docs: ReleaseItem[];
+  chores?: ReleaseItem[];
   dependencies: ReleaseItem[];
+  release_prs?: ReleaseItem[];
   other: ReleaseItem[];
   all_commits: Array<{ sha: string; message: string; author: string }>;
   warnings?: string[];
@@ -155,7 +157,9 @@ export function renderMarkdown(data: ReleaseContext): string {
   lines.push(...renderItems("Features", data.features));
   lines.push(...renderItems("Fixes", data.fixes));
   lines.push(...renderItems("Documentation", data.docs));
+  lines.push(...renderItems("Chores", data.chores ?? []));
   lines.push(...renderItems("Dependencies", data.dependencies));
+  lines.push(...renderItems("Release pull requests", data.release_prs ?? []));
   lines.push(...renderItems("Other", data.other));
 
   if (
@@ -163,7 +167,9 @@ export function renderMarkdown(data: ReleaseContext): string {
     !data.features.length &&
     !data.fixes.length &&
     !data.docs.length &&
+    !(data.chores?.length ?? 0) &&
     !data.dependencies.length &&
+    !(data.release_prs?.length ?? 0) &&
     !data.other.length
   ) {
     lines.push("No merged pull requests were associated with this range.", "");
@@ -177,5 +183,3 @@ export function renderMarkdown(data: ReleaseContext): string {
 
   return lines.join("\n");
 }
-
-
