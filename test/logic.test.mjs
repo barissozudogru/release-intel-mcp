@@ -89,6 +89,14 @@ test("summarizeBody truncates long bodies with an ellipsis", () => {
   assert.ok(result.endsWith("..."));
 });
 
+test("summarizeBody never exceeds a small custom maximum", () => {
+  for (const [body, maxLength, expected] of [["abcdef", 2, "ab"], ["a".repeat(30), 4, "a..."], ["a".repeat(30), 10, "aaaaaaa..."]]) {
+    const result = summarizeBody(body, maxLength);
+    assert.equal(result, expected);
+    assert.ok(result.length <= maxLength);
+  }
+});
+
 test("summarizeBody strips HTML comments and normalizes line endings", () => {
   const result = summarizeBody("hello <!-- secret --> world\r\nsecond");
   assert.ok(!result.includes("secret"));
