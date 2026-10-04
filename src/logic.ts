@@ -4,15 +4,21 @@
 // Fix #4: remove the overly broad /#(\d+)/g pattern that causes false positives
 export function extractLinkedIssues(body: string | null): number[] {
   if (!body) return [];
-  const patterns = [
-    /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+(?:[\w.-]+\/[\w.-]+)?#(\d+)/gi,
-    /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/(\d+)/gi,
-  ];
+  const reference = String.raw`(?:[\w.-]+\/[\w.-]+)?#\d+|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/\d+`;
+  const pattern = new RegExp(
+    String.raw`(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+((?:${reference})(?:\s*(?:,|and)\s*(?:${reference}))*)`,
+    "gi"
+  );
+  const referencePattern = new RegExp(
+    String.raw`(?:[\w.-]+\/[\w.-]+)?#(\d+)|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/(\d+)`,
+    "gi"
+  );
   const issues = new Set<number>();
-  for (const pattern of patterns) {
-    let match;
-    while ((match = pattern.exec(body)) !== null) {
-      issues.add(parseInt(match[1], 10));
+  let match;
+  while ((match = pattern.exec(body)) !== null) {
+    let referenceMatch;
+    while ((referenceMatch = referencePattern.exec(match[1])) !== null) {
+      issues.add(parseInt(referenceMatch[1] ?? referenceMatch[2], 10));
     }
   }
   return Array.from(issues);
