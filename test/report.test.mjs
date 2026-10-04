@@ -12,3 +12,14 @@ test("report rejects repository names with more than one path separator", () => 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
+
+test("report rejects unexpected positional arguments", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1", "v2", "extra"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
