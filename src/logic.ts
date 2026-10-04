@@ -6,7 +6,7 @@ export function extractLinkedIssues(body: string | null): number[] {
   if (!body) return [];
   const reference = String.raw`(?:[\w.-]+\/[\w.-]+)?#\d+(?![\p{L}\p{N}\p{M}_-])|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/\d+(?![\p{L}\p{N}\p{M}_-])`;
   const pattern = new RegExp(
-    String.raw`(?<![\p{L}\p{N}\p{M}_-])(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+((?:${reference})(?:\s*(?:,|and)\s*(?:${reference}))*)`,
+    String.raw`(?<![\p{L}\p{N}\p{M}_-])(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+((?:${reference})(?:\s*(?:,\s*and|,|and)\s*(?:${reference}))*)`,
     "giu"
   );
   const referencePattern = new RegExp(
