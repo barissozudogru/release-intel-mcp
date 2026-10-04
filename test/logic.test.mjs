@@ -59,6 +59,10 @@ test("extractLinkedIssues ignores issue-like numbers embedded in Unicode words",
   assert.deepEqual(extractLinkedIssues("fixes #123éclair and resolves owner/repo#45東京"), []);
 });
 
+test("extractLinkedIssues ignores closing keywords embedded in words", () => {
+  assert.deepEqual(extractLinkedIssues("prefixes #123 and unfixes #456"), []);
+});
+
 test("categorizePRByLabels maps common GitHub labels", () => {
   assert.equal(categorizePRByLabels(["breaking"]), "breaking");
   assert.equal(categorizePRByLabels(["enhancement"]), "feature");
