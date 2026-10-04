@@ -18,14 +18,17 @@ export function extractLinkedIssues(body: string | null): number[] {
   return Array.from(issues);
 }
 
-export function summarizeBody(body: string | null, maxLength = 300): string {
+export function summarizeBody(body: string | null, maxLength?: number): string {
   if (!body) return "";
+  const limit = maxLength ?? 300;
   const cleaned = body
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/\r\n/g, "\n")
     .trim();
-  if (cleaned.length <= maxLength) return cleaned;
-  return cleaned.slice(0, maxLength).trimEnd() + "...";
+  if (cleaned.length <= limit) return cleaned;
+  if (maxLength === undefined) return cleaned.slice(0, limit).trimEnd() + "...";
+  if (limit <= 3) return cleaned.slice(0, Math.max(0, limit));
+  return cleaned.slice(0, limit - 3).trimEnd() + "...";
 }
 
 // Fix #14: conventional commit prefix fallback when no labels match
