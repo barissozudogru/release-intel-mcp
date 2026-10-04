@@ -46,7 +46,13 @@ if (helpRequested) {
   usage(0);
 }
 
-if (args.length !== 3 || !repository || !fromRef || !toRef || !repository.includes("/")) {
+if (
+  args.length !== 3 ||
+  !repository ||
+  !fromRef?.trim() ||
+  !toRef?.trim() ||
+  !repository.includes("/")
+) {
   usage(1);
 }
 
