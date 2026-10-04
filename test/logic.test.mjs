@@ -34,6 +34,10 @@ test("extractLinkedIssues follows full issue and PR URLs", () => {
   );
 });
 
+test("extractLinkedIssues follows cross-repository issue references", () => {
+  assert.deepEqual(extractLinkedIssues("Fixes owner/repository#123"), [123]);
+});
+
 test("extractLinkedIssues deduplicates repeated references", () => {
   assert.deepEqual(extractLinkedIssues("closes #1 and also fixes #1"), [1]);
 });
