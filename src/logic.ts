@@ -4,14 +4,14 @@
 // Fix #4: remove the overly broad /#(\d+)/g pattern that causes false positives
 export function extractLinkedIssues(body: string | null): number[] {
   if (!body) return [];
-  const reference = String.raw`(?:[\w.-]+\/[\w.-]+)?#\d+|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/\d+`;
+  const reference = String.raw`(?:[\w.-]+\/[\w.-]+)?#\d+(?![\p{L}\p{N}\p{M}_-])|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/\d+(?![\p{L}\p{N}\p{M}_-])`;
   const pattern = new RegExp(
     String.raw`(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+((?:${reference})(?:\s*(?:,|and)\s*(?:${reference}))*)`,
-    "gi"
+    "giu"
   );
   const referencePattern = new RegExp(
-    String.raw`(?:[\w.-]+\/[\w.-]+)?#(\d+)|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/(\d+)`,
-    "gi"
+    String.raw`(?:[\w.-]+\/[\w.-]+)?#(\d+)(?![\p{L}\p{N}\p{M}_-])|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/(\d+)(?![\p{L}\p{N}\p{M}_-])`,
+    "giu"
   );
   const issues = new Set<number>();
   let match;

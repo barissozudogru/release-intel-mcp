@@ -51,6 +51,14 @@ test("extractLinkedIssues ignores bare #numbers without a closing keyword", () =
   assert.deepEqual(extractLinkedIssues("see #100 for context"), []);
 });
 
+test("extractLinkedIssues ignores issue-like numbers embedded in words", () => {
+  assert.deepEqual(extractLinkedIssues("fixes #123abc and resolves owner/repo#45-beta"), []);
+});
+
+test("extractLinkedIssues ignores issue-like numbers embedded in Unicode words", () => {
+  assert.deepEqual(extractLinkedIssues("fixes #123éclair and resolves owner/repo#45東京"), []);
+});
+
 test("categorizePRByLabels maps common GitHub labels", () => {
   assert.equal(categorizePRByLabels(["breaking"]), "breaking");
   assert.equal(categorizePRByLabels(["enhancement"]), "feature");
