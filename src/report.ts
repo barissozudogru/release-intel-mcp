@@ -55,6 +55,9 @@ if (repositoryParts.length !== 2 || !repositoryParts[0] || !repositoryParts[1]) 
   usage(1);
 }
 const [owner, repo] = repositoryParts;
+if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(repo)) {
+  usage(1);
+}
 
 const client = new Client({ name: "release-intel-report", version: "1.0.0" });
 const serverPath = fileURLToPath(new URL("./index.js", import.meta.url));
