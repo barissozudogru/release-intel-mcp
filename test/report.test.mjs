@@ -45,3 +45,14 @@ test("report rejects unexpected positional arguments", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
+
+test("report rejects whitespace-only refs", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "   ", "v2"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
