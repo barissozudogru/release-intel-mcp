@@ -26,13 +26,14 @@ export function extractLinkedIssues(body: string | null): number[] {
 
 export function summarizeBody(body: string | null, maxLength?: number): string {
   if (!body) return "";
-  const limit = maxLength ?? 300;
+  const useDefaultLimit = maxLength === undefined || Number.isNaN(maxLength);
+  const limit = useDefaultLimit ? 300 : (maxLength ?? 300);
   const cleaned = body
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/\r\n/g, "\n")
     .trim();
   if (cleaned.length <= limit) return cleaned;
-  if (maxLength === undefined) return cleaned.slice(0, limit).trimEnd() + "...";
+  if (useDefaultLimit) return cleaned.slice(0, limit).trimEnd() + "...";
   if (limit <= 3) return cleaned.slice(0, Math.max(0, limit));
   return cleaned.slice(0, limit - 3).trimEnd() + "...";
 }
