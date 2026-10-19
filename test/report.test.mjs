@@ -56,3 +56,25 @@ test("report rejects whitespace-only refs", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
+
+test("report rejects a from ref with surrounding whitespace", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", " v1", "v2"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
+
+test("report rejects a to ref with surrounding whitespace", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1", "v2 "],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});

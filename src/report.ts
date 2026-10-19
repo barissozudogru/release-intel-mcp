@@ -51,6 +51,8 @@ if (
   !repository ||
   !fromRef?.trim() ||
   !toRef?.trim() ||
+  fromRef !== fromRef.trim() ||
+  toRef !== toRef.trim() ||
   !repository.includes("/")
 ) {
   usage(1);
