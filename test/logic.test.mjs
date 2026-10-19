@@ -189,6 +189,14 @@ test("calculateFileStats handles empty or null file lists", () => {
   assert.equal(fromNull.lines_deleted, 0);
 });
 
+test("calculateFileStats does not mark an empty list truncated at a zero limit", () => {
+  const stats = calculateFileStats([], 0);
+  assert.equal(stats.truncated, false);
+  assert.equal(stats.total_files_changed, 0);
+  assert.equal(stats.lines_added, 0);
+  assert.equal(stats.lines_deleted, 0);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");
