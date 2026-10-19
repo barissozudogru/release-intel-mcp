@@ -209,6 +209,15 @@ test("calculateFileStats does not mark an empty list truncated at a zero limit",
   assert.equal(stats.lines_deleted, 0);
 });
 
+test("calculateFileStats uses the default limit when the custom limit is NaN", () => {
+  const files = Array.from({ length: 300 }, () => ({ additions: 1, deletions: 1 }));
+  const stats = calculateFileStats(files, Number.NaN);
+  assert.equal(stats.truncated, true);
+  assert.equal(stats.total_files_changed, undefined);
+  assert.equal(stats.lines_added, undefined);
+  assert.equal(stats.lines_deleted, undefined);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");
