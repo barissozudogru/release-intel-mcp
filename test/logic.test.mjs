@@ -138,6 +138,10 @@ test("summarizeBody strips HTML comments and normalizes line endings", () => {
   assert.ok(!result.includes("\r"));
 });
 
+test("summarizeBody normalizes lone carriage returns", () => {
+  assert.equal(summarizeBody("first\rsecond"), "first\nsecond");
+});
+
 test("release PRs are categorized as releases, not fixes", () => {
   // PR "release: 0.122.0" with label "autorelease: tagged" was reported as a
   // bug fix by get_release_summary and as "other" by get_pull_requests_in_range.
