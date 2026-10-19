@@ -30,7 +30,7 @@ export function summarizeBody(body: string | null, maxLength?: number): string {
   const limit = useDefaultLimit ? 300 : (maxLength ?? 300);
   const cleaned = body
     .replace(/<!--[\s\S]*?-->/g, "")
-    .replace(/\r\n/g, "\n")
+    .replace(/\r\n?/g, "\n")
     .trim();
   if (cleaned.length <= limit) return cleaned;
   if (useDefaultLimit) return cleaned.slice(0, limit).trimEnd() + "...";
