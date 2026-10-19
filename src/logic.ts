@@ -94,7 +94,8 @@ export function calculateFileStats(
   limit = 300
 ): FileStats {
   const list = files ?? [];
-  if (list.length > 0 && list.length >= limit) {
+  const effectiveLimit = Number.isNaN(limit) ? 300 : limit;
+  if (list.length > 0 && list.length >= effectiveLimit) {
     return { truncated: true };
   }
   return {
