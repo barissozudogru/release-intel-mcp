@@ -45,7 +45,7 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
   // because their bodies quote the whole changelog, which otherwise pulls them
   // into whichever category the quoted text happens to match.
   if (lower.some((l) => /\bautorelease\b|\brelease-please\b/.test(l))) return "release";
-  if (lower.some((l) => /breaking/.test(l))) return "breaking";
+  if (lower.some((l) => /^breaking(?:[- ]change)?$/.test(l))) return "breaking";
   if (lower.some((l) => /\b(?:feature|feat|enhancement)s?\b/.test(l))) return "feature";
   if (lower.some((l) => /\b(?:fix(?:es)?|bug(?:s|fix|fixes)?|hotfix(?:es)?)\b/.test(l))) return "fix";
   if (lower.some((l) => /\b(?:doc|docs|documentation)\b/.test(l))) return "docs";
