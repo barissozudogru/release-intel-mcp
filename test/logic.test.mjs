@@ -69,6 +69,8 @@ test("extractLinkedIssues ignores closing keywords embedded in words", () => {
 
 test("categorizePRByLabels maps common GitHub labels", () => {
   assert.equal(categorizePRByLabels(["breaking"]), "breaking");
+  assert.equal(categorizePRByLabels(["breaking-change"]), "breaking");
+  assert.equal(categorizePRByLabels(["breaking change"]), "breaking");
   assert.equal(categorizePRByLabels(["enhancement"]), "feature");
   assert.equal(categorizePRByLabels(["bug"]), "fix");
   assert.equal(categorizePRByLabels(["documentation"]), "docs");
@@ -81,6 +83,9 @@ test("categorizePRByLabels avoids false positives from substrings", () => {
   assert.equal(categorizePRByLabels(["defeat"]), "other");
   assert.equal(categorizePRByLabels(["docker"]), "other");
   assert.equal(categorizePRByLabels(["deploy"]), "other");
+  assert.equal(categorizePRByLabels(["breaking-other"]), "other");
+  assert.equal(categorizePRByLabels(["not breaking"]), "other");
+  assert.equal(categorizePRByLabels(["non-breaking"]), "other");
 });
 
 test("categorizePRByLabels falls back to conventional commit prefixes", () => {
