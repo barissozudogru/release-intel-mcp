@@ -223,6 +223,15 @@ test("calculateFileStats uses the default limit when the custom limit is NaN", (
   assert.equal(stats.lines_deleted, undefined);
 });
 
+test("calculateFileStats uses the default limit for a negative custom limit", () => {
+  const files = [{ additions: 1, deletions: 1 }];
+  const stats = calculateFileStats(files, -1);
+  assert.equal(stats.truncated, false);
+  assert.equal(stats.total_files_changed, 1);
+  assert.equal(stats.lines_added, 1);
+  assert.equal(stats.lines_deleted, 1);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");
