@@ -241,6 +241,15 @@ test("calculateFileStats uses the default limit for an infinite custom limit", (
   assert.equal(stats.lines_deleted, undefined);
 });
 
+test("calculateFileStats ignores non-finite per-file line counts", () => {
+  const stats = calculateFileStats([
+    { additions: Number.NaN, deletions: Number.POSITIVE_INFINITY },
+    { additions: 4, deletions: 2 },
+  ]);
+  assert.equal(stats.lines_added, 4);
+  assert.equal(stats.lines_deleted, 2);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");
