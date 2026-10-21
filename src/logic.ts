@@ -101,8 +101,14 @@ export function calculateFileStats(
   return {
     truncated: false,
     total_files_changed: list.length,
-    lines_added: list.reduce((sum, f) => sum + (f.additions ?? 0), 0),
-    lines_deleted: list.reduce((sum, f) => sum + (f.deletions ?? 0), 0),
+    lines_added: list.reduce(
+      (sum, f) => sum + (Number.isFinite(f.additions) ? f.additions! : 0),
+      0
+    ),
+    lines_deleted: list.reduce(
+      (sum, f) => sum + (Number.isFinite(f.deletions) ? f.deletions! : 0),
+      0
+    ),
   };
 }
 
