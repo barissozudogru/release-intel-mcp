@@ -232,6 +232,15 @@ test("calculateFileStats uses the default limit for a negative custom limit", ()
   assert.equal(stats.lines_deleted, 1);
 });
 
+test("calculateFileStats uses the default limit for an infinite custom limit", () => {
+  const files = Array.from({ length: 300 }, () => ({ additions: 1, deletions: 1 }));
+  const stats = calculateFileStats(files, Number.POSITIVE_INFINITY);
+  assert.equal(stats.truncated, true);
+  assert.equal(stats.total_files_changed, undefined);
+  assert.equal(stats.lines_added, undefined);
+  assert.equal(stats.lines_deleted, undefined);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");
