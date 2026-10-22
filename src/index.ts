@@ -18,6 +18,11 @@ const { version: VERSION } = require("../package.json");
 
 const GITHUB_API = "https://api.github.com";
 
+const refSchema = z
+  .string()
+  .min(1)
+  .refine((ref) => ref.trim() === ref, "Reference must not have surrounding whitespace");
+
 // Fix #15: validate token at call-site (startup check is done in main())
 function getToken(): string {
   const token = process.env.GITHUB_TOKEN;
@@ -152,8 +157,8 @@ server.registerTool(
       // Fix #11: validate owner/repo to safe characters
       owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
       repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
-      base: z.string().describe("Base ref (tag, branch, or commit SHA), the older point"),
-      head: z.string().describe("Head ref (tag, branch, or commit SHA), the newer point"),
+      base: refSchema.describe("Base ref (tag, branch, or commit SHA), the older point"),
+      head: refSchema.describe("Head ref (tag, branch, or commit SHA), the newer point"),
     }),
   },
   async ({ owner, repo, base, head }) => {
@@ -272,8 +277,8 @@ server.registerTool(
       // Fix #11: validate owner/repo
       owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
       repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
-      base: z.string().describe("Base ref (tag, branch, or commit SHA), the older point"),
-      head: z.string().describe("Head ref (tag, branch, or commit SHA), the newer point"),
+      base: refSchema.describe("Base ref (tag, branch, or commit SHA), the older point"),
+      head: refSchema.describe("Head ref (tag, branch, or commit SHA), the newer point"),
     }),
   },
   async ({ owner, repo, base, head }) => {
@@ -444,8 +449,8 @@ server.registerTool(
       // Fix #11: validate owner/repo
       owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
       repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
-      from_tag: z.string().describe("The previous release tag (base / older ref)"),
-      to_tag: z.string().describe("The new release tag or HEAD (head / newer ref)"),
+      from_tag: refSchema.describe("The previous release tag (base / older ref)"),
+      to_tag: refSchema.describe("The new release tag or HEAD (head / newer ref)"),
     }),
   },
   async ({ owner, repo, from_tag, to_tag }) => {
