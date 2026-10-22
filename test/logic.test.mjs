@@ -130,6 +130,10 @@ test("summarizeBody uses the default limit for a NaN maximum", () => {
   assert.equal(summarizeBody("a".repeat(400), Number.NaN), `${"a".repeat(300)}...`);
 });
 
+test("summarizeBody uses the default limit for a negative maximum", () => {
+  assert.equal(summarizeBody("a".repeat(400), -1), `${"a".repeat(300)}...`);
+});
+
 test("summarizeBody preserves the custom result length for an explicit null maximum", () => {
   assert.equal(summarizeBody("a".repeat(400), null), `${"a".repeat(297)}...`);
 });

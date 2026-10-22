@@ -26,7 +26,8 @@ export function extractLinkedIssues(body: string | null): number[] {
 
 export function summarizeBody(body: string | null, maxLength?: number): string {
   if (!body) return "";
-  const useDefaultLimit = maxLength === undefined || Number.isNaN(maxLength);
+  const useDefaultLimit =
+    maxLength === undefined || Number.isNaN(maxLength) || (maxLength !== null && maxLength < 0);
   const limit = useDefaultLimit ? 300 : (maxLength ?? 300);
   const cleaned = body
     .replace(/<!--[\s\S]*?-->/g, "")
