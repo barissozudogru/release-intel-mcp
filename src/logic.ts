@@ -45,7 +45,7 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
   // Release PRs are bookkeeping, not change content. They are checked first
   // because their bodies quote the whole changelog, which otherwise pulls them
   // into whichever category the quoted text happens to match.
-  if (lower.some((l) => /\bautorelease\b|\brelease-please\b/.test(l))) return "release";
+  if (lower.some((l) => /^(?:autorelease|release-please)(?:$|[: ])/.test(l))) return "release";
   if (lower.some((l) => /^breaking(?:[- ]change)?$/.test(l))) return "breaking";
   if (lower.some((l) => /\b(?:feature|feat|enhancement)s?\b/.test(l))) return "feature";
   if (lower.some((l) => /\b(?:fix(?:es|ed)?|bug(?:s|fix|fixes)?|hotfix(?:es)?)\b/.test(l))) return "fix";

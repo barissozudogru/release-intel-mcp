@@ -168,6 +168,8 @@ test("ordinary PRs are unaffected by the release rule", () => {
   assert.equal(categorizePRByLabels([], "fix: handle empty input"), "fix");
   assert.equal(categorizePRByLabels([], "feat: add retry"), "feature");
   assert.equal(categorizePRByLabels(["bug"], "something"), "fix");
+  assert.equal(categorizePRByLabels(["not-autorelease"], "something"), "other");
+  assert.equal(categorizePRByLabels(["release-please-disabled"], "something"), "other");
   // "released" is not "release"
   assert.equal(categorizePRByLabels([], "docs: document released versions"), "docs");
 });
