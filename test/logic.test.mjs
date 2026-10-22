@@ -89,6 +89,12 @@ test("categorizePRByLabels avoids false positives from substrings", () => {
   assert.equal(categorizePRByLabels(["non-breaking"]), "other");
 });
 
+test("categorizePRByLabels ignores explicitly negated category labels", () => {
+  assert.equal(categorizePRByLabels(["not-a-bug"]), "other");
+  assert.equal(categorizePRByLabels(["not-a-feature"]), "other");
+  assert.equal(categorizePRByLabels(["not-docs"]), "other");
+});
+
 test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "feat: add login"), "feature");
   assert.equal(categorizePRByLabels([], "fix: null crash"), "fix");

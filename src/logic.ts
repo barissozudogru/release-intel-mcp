@@ -41,7 +41,9 @@ export function summarizeBody(body: string | null, maxLength?: number): string {
 
 // Fix #14: conventional commit prefix fallback when no labels match
 export function categorizePRByLabels(labels: string[], commitMessage = ""): string {
-  const lower = labels.map((l) => l.toLowerCase());
+  const lower = labels
+    .map((l) => l.toLowerCase())
+    .filter((l) => !/^(?:not|non)[-_ ]/.test(l));
   // Release PRs are bookkeeping, not change content. They are checked first
   // because their bodies quote the whole changelog, which otherwise pulls them
   // into whichever category the quoted text happens to match.
