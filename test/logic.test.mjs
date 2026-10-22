@@ -73,6 +73,7 @@ test("categorizePRByLabels maps common GitHub labels", () => {
   assert.equal(categorizePRByLabels(["breaking change"]), "breaking");
   assert.equal(categorizePRByLabels(["enhancement"]), "feature");
   assert.equal(categorizePRByLabels(["bug"]), "fix");
+  assert.equal(categorizePRByLabels(["fixed"]), "fix");
   assert.equal(categorizePRByLabels(["documentation"]), "docs");
   assert.equal(categorizePRByLabels(["dependencies"]), "dependencies");
   assert.equal(categorizePRByLabels(["chore"]), "chore");
