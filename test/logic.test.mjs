@@ -79,6 +79,11 @@ test("categorizePRByLabels maps common GitHub labels", () => {
   assert.equal(categorizePRByLabels(["chore"]), "chore");
 });
 
+test("categorizePRByLabels ignores surrounding label whitespace", () => {
+  assert.equal(categorizePRByLabels([" breaking change "]), "breaking");
+  assert.equal(categorizePRByLabels(["  bug  "]), "fix");
+});
+
 test("categorizePRByLabels avoids false positives from substrings", () => {
   assert.equal(categorizePRByLabels(["suffix"]), "other");
   assert.equal(categorizePRByLabels(["defeat"]), "other");
