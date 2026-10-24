@@ -559,7 +559,7 @@ server.registerTool(
       );
 
       const contributors = Array.from(contributorMap.values()).sort(
-        (a, b) => b.commits - a.commits
+        (a, b) => b.commits - a.commits || a.login.localeCompare(b.login)
       );
 
       const formatPR = (pr: (typeof allPRs)[0]) => ({
