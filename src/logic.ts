@@ -18,7 +18,10 @@ export function extractLinkedIssues(body: string | null): number[] {
   while ((match = pattern.exec(body)) !== null) {
     let referenceMatch;
     while ((referenceMatch = referencePattern.exec(match[1])) !== null) {
-      issues.add(parseInt(referenceMatch[1] ?? referenceMatch[2], 10));
+      const issueNumber = Number(referenceMatch[1] ?? referenceMatch[2]);
+      if (Number.isSafeInteger(issueNumber) && issueNumber > 0) {
+        issues.add(issueNumber);
+      }
     }
   }
   return Array.from(issues);
