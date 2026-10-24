@@ -63,6 +63,10 @@ test("extractLinkedIssues ignores issue-like numbers embedded in Unicode words",
   assert.deepEqual(extractLinkedIssues("fixes #123éclair and resolves owner/repo#45東京"), []);
 });
 
+test("extractLinkedIssues ignores issue numbers outside the safe integer range", () => {
+  assert.deepEqual(extractLinkedIssues(`closes #${"9".repeat(400)}`), []);
+});
+
 test("extractLinkedIssues ignores closing keywords embedded in words", () => {
   assert.deepEqual(extractLinkedIssues("prefixes #123 and unfixes #456"), []);
 });
