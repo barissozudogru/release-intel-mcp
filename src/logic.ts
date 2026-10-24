@@ -100,7 +100,7 @@ export function calculateFileStats(
   limit = 300
 ): FileStats {
   const list = files ?? [];
-  const effectiveLimit = !Number.isFinite(limit) || limit < 0 ? 300 : limit;
+  const effectiveLimit = !Number.isInteger(limit) || limit < 0 ? 300 : limit;
   if (list.length > 0 && list.length >= effectiveLimit) {
     return { truncated: true };
   }

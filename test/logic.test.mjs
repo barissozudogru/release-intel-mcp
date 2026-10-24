@@ -263,6 +263,17 @@ test("calculateFileStats uses the default limit for an infinite custom limit", (
   assert.equal(stats.lines_deleted, undefined);
 });
 
+test("calculateFileStats uses the default limit for a fractional custom limit", () => {
+  const stats = calculateFileStats(
+    [{ additions: 1, deletions: 1 }, { additions: 2, deletions: 3 }],
+    1.5
+  );
+  assert.equal(stats.truncated, false);
+  assert.equal(stats.total_files_changed, 2);
+  assert.equal(stats.lines_added, 3);
+  assert.equal(stats.lines_deleted, 4);
+});
+
 test("calculateFileStats ignores non-finite per-file line counts", () => {
   const stats = calculateFileStats([
     { additions: Number.NaN, deletions: Number.POSITIVE_INFINITY },
