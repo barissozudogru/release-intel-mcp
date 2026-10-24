@@ -8,6 +8,7 @@ import { renderMarkdown, type ReleaseContext } from "./logic.js";
 const rawArgs = process.argv.slice(2);
 const helpRequested = rawArgs.includes("--help") || rawArgs.includes("-h");
 const jsonMode = rawArgs.includes("--json");
+const duplicateJsonFlag = rawArgs.filter((arg) => arg === "--json").length > 1;
 const args = rawArgs.filter(
   (arg) => arg !== "--json" && arg !== "--help" && arg !== "-h"
 );
@@ -47,6 +48,7 @@ if (helpRequested) {
 }
 
 if (
+  duplicateJsonFlag ||
   args.length !== 3 ||
   !repository ||
   !fromRef?.trim() ||

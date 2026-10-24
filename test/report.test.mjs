@@ -46,6 +46,17 @@ test("report rejects unexpected positional arguments", () => {
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
 
+test("report rejects duplicate json flags", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1", "v2", "--json", "--json"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
+
 test("report rejects whitespace-only refs", () => {
   const result = spawnSync(
     process.execPath,
