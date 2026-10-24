@@ -142,6 +142,12 @@ test("summarizeBody never exceeds a small custom maximum", () => {
   }
 });
 
+test("summarizeBody does not split surrogate pairs while truncating", () => {
+  const result = summarizeBody("😀😀😀", 4);
+  assert.equal(result, "...");
+  assert.doesNotMatch(result, /[\uD800-\uDFFF]/);
+});
+
 test("summarizeBody uses the default limit for a NaN maximum", () => {
   assert.equal(summarizeBody("a".repeat(400), Number.NaN), `${"a".repeat(300)}...`);
 });
