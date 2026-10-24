@@ -11,6 +11,7 @@ import {
   summarizeBody,
   categorizePRByLabels,
   calculateFileStats,
+  fileStatsWarning,
 } from "./logic.js";
 
 const require = createRequire(import.meta.url);
@@ -175,6 +176,8 @@ server.registerTool(
           `Warning: Only ${comparison.commits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
         );
       }
+      const fileWarning = fileStatsWarning(comparison.files);
+      if (fileWarning) warnings.push(fileWarning);
 
       // Fix #10: track failed lookups to surface in output
       let failedLookups = 0;

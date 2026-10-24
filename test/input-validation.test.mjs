@@ -89,3 +89,33 @@ test("release summary sorts equal-count contributors by login", async () => {
     await client.close().catch(() => undefined);
   }
 });
+
+test("get changes warns when the compare file list reaches GitHub's limit", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "compare-files-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async()=>new Response(JSON.stringify({total_commits:0,commits:[],files:Array.from({length:300},()=>({filename:'file.txt',status:'modified',changes:1,additions:1,deletions:0})),ahead_by:0,behind_by:0,status:'identical'}),{status:200,headers:{'content-type':'application/json'}})")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "compare-files-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    assert.match(result.content[0].text, /Warning: File comparison was truncated at 300 files/);
+    assert.match(result.content[0].text, /"warnings":\["Warning: File comparison was truncated/);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});

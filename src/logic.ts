@@ -122,6 +122,12 @@ export function calculateFileStats(
   };
 }
 
+export function fileStatsWarning(files: FileStatItem[] | null | undefined): string | undefined {
+  const stats = calculateFileStats(files);
+  if (!stats.truncated) return undefined;
+  return `Warning: File comparison was truncated at ${files?.length ?? 0} files due to GitHub API limits; file and line statistics may be incomplete.`;
+}
+
 export interface ReleaseItem {
   number: number;
   title: string;
