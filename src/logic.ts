@@ -37,9 +37,13 @@ export function summarizeBody(body: string | null, maxLength?: number): string {
     .replace(/\r\n?/g, "\n")
     .trim();
   if (cleaned.length <= limit) return cleaned;
-  if (useDefaultLimit) return cleaned.slice(0, limit).trimEnd() + "...";
-  if (limit <= 3) return cleaned.slice(0, Math.max(0, limit));
-  return cleaned.slice(0, limit - 3).trimEnd() + "...";
+  const safeSlice = (end: number): string => {
+    const result = cleaned.slice(0, end);
+    return /[\uD800-\uDBFF]$/.test(result) ? result.slice(0, -1) : result;
+  };
+  if (useDefaultLimit) return safeSlice(limit).trimEnd() + "...";
+  if (limit <= 3) return safeSlice(Math.max(0, limit));
+  return safeSlice(limit - 3).trimEnd() + "...";
 }
 
 // Fix #14: conventional commit prefix fallback when no labels match
