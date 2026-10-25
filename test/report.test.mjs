@@ -6,7 +6,7 @@ test("report rejects repository names with more than one path separator", () => 
   const result = spawnSync(
     process.execPath,
     ["dist/report.js", "owner/repo/extra", "v1", "v2"],
-    { encoding: "utf8", timeout: 3000 }
+    { encoding: "utf8", timeout: 1000 }
   );
 
   assert.equal(result.status, 1);
