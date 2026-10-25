@@ -70,7 +70,7 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
     if (/^release\b\s*[:(]/i.test(firstLine) || /^chore\(release\)/i.test(firstLine)) {
       return "release";
     }
-    if (/BREAKING CHANGE:/i.test(firstLine) || /^[\w-]+(?:\([^)]+\))?!:/.test(firstLine)) return "breaking";
+    if (/^BREAKING CHANGE:/i.test(firstLine) || /^[\w-]+(?:\([^)]+\))?!:/.test(firstLine)) return "breaking";
     if (/^feat(?:ure)?[:(]/i.test(firstLine)) return "feature";
     if (/^fix(?:bug)?[:(]/i.test(firstLine)) return "fix";
     if (/^docs?[:(]/i.test(firstLine)) return "docs";
