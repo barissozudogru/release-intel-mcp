@@ -314,6 +314,15 @@ test("calculateFileStats ignores fractional per-file line counts", () => {
   assert.equal(stats.lines_deleted, 1);
 });
 
+test("calculateFileStats omits line totals that exceed safe integer precision", () => {
+  const stats = calculateFileStats([
+    { additions: Number.MAX_SAFE_INTEGER, deletions: Number.MAX_SAFE_INTEGER },
+    { additions: 1, deletions: 1 },
+  ]);
+  assert.equal(stats.lines_added, undefined);
+  assert.equal(stats.lines_deleted, undefined);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");

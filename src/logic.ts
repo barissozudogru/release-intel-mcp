@@ -108,17 +108,23 @@ export function calculateFileStats(
   if (list.length > 0 && list.length >= effectiveLimit) {
     return { truncated: true };
   }
+  const sumSafeLineStats = (field: "additions" | "deletions"): number | undefined => {
+    let sum = 0;
+    for (const file of list) {
+      const value = file[field];
+      if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) {
+        const next = sum + value;
+        if (!Number.isSafeInteger(next)) return undefined;
+        sum = next;
+      }
+    }
+    return sum;
+  };
   return {
     truncated: false,
     total_files_changed: list.length,
-    lines_added: list.reduce(
-      (sum, f) => sum + (Number.isSafeInteger(f.additions) && f.additions! >= 0 ? f.additions! : 0),
-      0
-    ),
-    lines_deleted: list.reduce(
-      (sum, f) => sum + (Number.isSafeInteger(f.deletions) && f.deletions! >= 0 ? f.deletions! : 0),
-      0
-    ),
+    lines_added: sumSafeLineStats("additions"),
+    lines_deleted: sumSafeLineStats("deletions"),
   };
 }
 
