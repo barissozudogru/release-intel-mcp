@@ -22,7 +22,8 @@ const GITHUB_API = "https://api.github.com";
 const refSchema = z
   .string()
   .min(1)
-  .refine((ref) => ref.trim() === ref, "Reference must not have surrounding whitespace");
+  .refine((ref) => ref.trim() === ref, "Reference must not have surrounding whitespace")
+  .refine((ref) => !/[\u0000-\u001F\u007F]/.test(ref), "Reference must not contain control characters");
 
 // Fix #15: validate token at call-site (startup check is done in main())
 function getToken(): string {
