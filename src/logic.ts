@@ -112,11 +112,11 @@ export function calculateFileStats(
     truncated: false,
     total_files_changed: list.length,
     lines_added: list.reduce(
-      (sum, f) => sum + (Number.isFinite(f.additions) && f.additions! >= 0 ? f.additions! : 0),
+      (sum, f) => sum + (Number.isSafeInteger(f.additions) && f.additions! >= 0 ? f.additions! : 0),
       0
     ),
     lines_deleted: list.reduce(
-      (sum, f) => sum + (Number.isFinite(f.deletions) && f.deletions! >= 0 ? f.deletions! : 0),
+      (sum, f) => sum + (Number.isSafeInteger(f.deletions) && f.deletions! >= 0 ? f.deletions! : 0),
       0
     ),
   };

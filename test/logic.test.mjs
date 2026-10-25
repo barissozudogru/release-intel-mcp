@@ -298,6 +298,15 @@ test("calculateFileStats ignores negative per-file line counts", () => {
   assert.equal(stats.lines_deleted, 1);
 });
 
+test("calculateFileStats ignores fractional per-file line counts", () => {
+  const stats = calculateFileStats([
+    { additions: 2.5, deletions: 1.25 },
+    { additions: 4, deletions: 1 },
+  ]);
+  assert.equal(stats.lines_added, 4);
+  assert.equal(stats.lines_deleted, 1);
+});
+
 test("formatStat returns N/A for null or undefined and preserves numbers including zero", () => {
   assert.equal(formatStat(undefined), "N/A");
   assert.equal(formatStat(null), "N/A");
