@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { fileURLToPath } from "node:url";
-import { renderMarkdown, type ReleaseContext } from "./logic.js";
+import type { ReleaseContext } from "./logic.js";
 
 const rawArgs = process.argv.slice(2);
 const helpRequested = rawArgs.includes("--help") || rawArgs.includes("-h");
@@ -68,6 +65,13 @@ const [owner, repo] = repositoryParts;
 if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(repo)) {
   usage(1);
 }
+
+const [{ Client }, { StdioClientTransport }, { fileURLToPath }, { renderMarkdown }] = await Promise.all([
+  import("@modelcontextprotocol/sdk/client/index.js"),
+  import("@modelcontextprotocol/sdk/client/stdio.js"),
+  import("node:url"),
+  import("./logic.js"),
+]);
 
 const client = new Client({ name: "release-intel-report", version: "1.0.0" });
 const serverPath = fileURLToPath(new URL("./index.js", import.meta.url));
