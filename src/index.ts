@@ -491,7 +491,7 @@ server.registerTool(
 
       // Fix #2: batchAsync instead of Promise.all
       await batchAsync(comparison.commits, async (commit) => {
-        const login = commit.author?.login || commit.commit.author?.email || commitAuthorName(commit);
+        const login = commit.author?.login?.trim() || commit.commit.author?.email?.trim() || commitAuthorName(commit).trim() || "unknown";
         const name = commitAuthorName(commit);
         const firstCommitLine = commit.commit.message.split("\n")[0].trim();
 
