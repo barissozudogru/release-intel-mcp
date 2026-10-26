@@ -104,7 +104,7 @@ interface GitHubCommit {
       name: string;
       email: string;
       date: string;
-    };
+    } | null;
   };
   author: {
     login: string;
@@ -140,6 +140,18 @@ interface GitHubCompareResponse {
   behind_by: number;
   status: string;
   total_commits: number;
+}
+
+function commitAuthorName(commit: GitHubCommit): string {
+  return commit.commit.author?.name ?? commit.author?.login ?? "unknown";
+}
+
+function commitAuthorEmail(commit: GitHubCommit): string {
+  return commit.commit.author?.email ?? "";
+}
+
+function commitAuthorDate(commit: GitHubCommit): string {
+  return commit.commit.author?.date ?? "";
 }
 
 // Fix #17: use VERSION from package.json
@@ -220,10 +232,10 @@ server.registerTool(
           sha: commit.sha.slice(0, 8),
           sha_full: commit.sha,
           message: firstLine,
-          author_name: commit.commit.author.name,
-          author_email: commit.commit.author.email,
+          author_name: commitAuthorName(commit),
+          author_email: commitAuthorEmail(commit),
           author_login: commit.author?.login ?? null,
-          committed_at: commit.commit.author.date,
+          committed_at: commitAuthorDate(commit),
           commit_url: commit.html_url,
           pr_number: prNumber,
           pr_title: prTitle,
@@ -390,8 +402,8 @@ server.registerTool(
           sha: commit.sha.slice(0, 8),
           sha_full: commit.sha,
           message: firstLine,
-          author: commit.author?.login ?? commit.commit.author.name,
-          committed_at: commit.commit.author.date,
+          author: commit.author?.login ?? commitAuthorName(commit),
+          committed_at: commitAuthorDate(commit),
           commit_url: commit.html_url,
           category,
           is_direct_commit: true,
@@ -479,8 +491,8 @@ server.registerTool(
 
       // Fix #2: batchAsync instead of Promise.all
       await batchAsync(comparison.commits, async (commit) => {
-        const login = commit.author?.login ?? commit.commit.author.email;
-        const name = commit.commit.author.name;
+        const login = commit.author?.login ?? commit.commit.author?.email ?? commitAuthorName(commit);
+        const name = commitAuthorName(commit);
         const firstCommitLine = commit.commit.message.split("\n")[0].trim();
 
         const existing = contributorMap.get(login);
@@ -620,8 +632,8 @@ server.registerTool(
         all_commits: comparison.commits.map((c) => ({
           sha: c.sha.slice(0, 8),
           message: c.commit.message.split("\n")[0].trim(),
-          author: c.author?.login ?? c.commit.author.name,
-          date: c.commit.author.date,
+          author: c.author?.login ?? commitAuthorName(c),
+          date: commitAuthorDate(c),
         })),
       };
 
