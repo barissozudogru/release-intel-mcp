@@ -94,7 +94,7 @@ test("release summary sorts equal-count contributors by login", async () => {
   }
 });
 
-test("change output falls back to the login when the commit author name is empty", async () => {
+test("change output falls back to the login when the commit author name is blank", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["dist/index.js"],
@@ -107,7 +107,7 @@ test("change output falls back to the login when the commit author name is empty
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
           "const value=String(url);" +
           "if(value.includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
-          "{sha:'commit',commit:{message:'fix: sample',author:{name:'',email:'',date:'2026-01-01'}},author:{login:'alice'},html_url:'https://example.test/commit'}]," +
+          "{sha:'commit',commit:{message:'fix: sample',author:{name:'   ',email:'',date:'2026-01-01'}},author:{login:'alice'},html_url:'https://example.test/commit'}]," +
           "files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200,headers:{'content-type':'application/json'}});" +
           "return new Response(JSON.stringify([]),{status:200,headers:{'content-type':'application/json'}});" +
           "}")}`,
