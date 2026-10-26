@@ -684,7 +684,14 @@ async function main() {
   if (useHttp) {
     const app = express();
     app.use(express.json());
-    const port = parseInt(process.env.PORT || '3000', 10);
+    const configuredPort = process.env.PORT || '3000';
+    if (!/^\d+$/.test(configuredPort)) {
+      throw new Error('PORT must be a whole number between 0 and 65535');
+    }
+    const port = Number(configuredPort);
+    if (!Number.isSafeInteger(port) || port > 65535) {
+      throw new Error('PORT must be a whole number between 0 and 65535');
+    }
 
     app.post('/mcp', async (req, res) => {
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
