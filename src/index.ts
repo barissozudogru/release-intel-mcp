@@ -143,7 +143,7 @@ interface GitHubCompareResponse {
 }
 
 function commitAuthorName(commit: GitHubCommit): string {
-  return commit.commit.author?.name ?? commit.author?.login ?? "unknown";
+  return commit.commit.author?.name || commit.author?.login || "unknown";
 }
 
 function commitAuthorEmail(commit: GitHubCommit): string {
