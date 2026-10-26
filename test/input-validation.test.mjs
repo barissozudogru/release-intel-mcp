@@ -123,3 +123,103 @@ test("get changes warns when the compare file list reaches GitHub's limit", asyn
     await client.close().catch(() => undefined);
   }
 });
+
+test("release summary tolerates commits without author metadata", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "missing-author-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'abc12345',commit:{message:'direct commit',author:null},author:null,html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "missing-author-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.all_commits[0].author, "unknown");
+    assert.equal(data.all_commits[0].date, "");
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
+test("change and pull request tools tolerate commits without author metadata", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "missing-author-cross-tool-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'abc12345',commit:{message:'direct commit',author:null},author:null,html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "missing-author-cross-tool-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const changes = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(changes.isError, undefined);
+    const changesData = JSON.parse(changes.content[0].text);
+    assert.deepEqual(changesData.commits[0], {
+      sha: "abc12345",
+      sha_full: "abc12345",
+      message: "direct commit",
+      author_name: "unknown",
+      author_email: "",
+      author_login: null,
+      committed_at: "",
+      commit_url: "https://example.test/commit",
+      pr_number: null,
+      pr_title: null,
+      pr_labels: [],
+      pr_body_summary: "",
+      linked_issues: [],
+    });
+
+    const pullRequests = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(pullRequests.isError, undefined);
+    const pullRequestData = JSON.parse(pullRequests.content[0].text);
+    assert.deepEqual(pullRequestData.categorized.other[0], {
+      sha: "abc12345",
+      sha_full: "abc12345",
+      message: "direct commit",
+      author: "unknown",
+      committed_at: "",
+      commit_url: "https://example.test/commit",
+      category: "other",
+      is_direct_commit: true,
+    });
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
