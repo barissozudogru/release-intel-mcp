@@ -146,6 +146,10 @@ function commitAuthorName(commit: GitHubCommit): string {
   return commit.commit.author?.name?.trim() || commit.author?.login?.trim() || "unknown";
 }
 
+function commitAuthorLogin(commit: GitHubCommit): string {
+  return commit.author?.login?.trim() || commitAuthorName(commit);
+}
+
 function commitAuthorEmail(commit: GitHubCommit): string {
   return commit.commit.author?.email ?? "";
 }
@@ -402,7 +406,7 @@ server.registerTool(
           sha: commit.sha.slice(0, 8),
           sha_full: commit.sha,
           message: firstLine,
-          author: commit.author?.login ?? commitAuthorName(commit),
+          author: commitAuthorLogin(commit),
           committed_at: commitAuthorDate(commit),
           commit_url: commit.html_url,
           category,
@@ -632,7 +636,7 @@ server.registerTool(
         all_commits: comparison.commits.map((c) => ({
           sha: c.sha.slice(0, 8),
           message: c.commit.message.split("\n")[0].trim(),
-          author: c.author?.login ?? commitAuthorName(c),
+          author: commitAuthorLogin(c),
           date: commitAuthorDate(c),
         })),
       };
