@@ -403,3 +403,39 @@ test("change output does not expose whitespace-only author logins", async () => 
     await client.close().catch(() => undefined);
   }
 });
+
+test("release summary normalizes whitespace-only pull request author logins", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "whitespace-pr-author-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'abc12345',commit:{message:'feat: sample',author:{name:'Commit Author',email:'commit@example.test',date:'2026-01-01'}},author:{login:'commit-author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([{number:7,title:'feat: Feature',body:null,state:'closed',merged_at:'2026-01-02',html_url:'https://example.test/pr',user:{login:'   '},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "whitespace-pr-author-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.features[0].author, "unknown");
+    assert.equal(data.contributors.at(-1).login, "unknown");
+    assert.equal(data.contributors.at(-1).prs, 1);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
