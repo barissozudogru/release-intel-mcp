@@ -238,7 +238,7 @@ server.registerTool(
           message: firstLine,
           author_name: commitAuthorName(commit),
           author_email: commitAuthorEmail(commit),
-          author_login: commit.author?.login ?? null,
+          author_login: commit.author?.login?.trim() || null,
           committed_at: commitAuthorDate(commit),
           commit_url: commit.html_url,
           pr_number: prNumber,
