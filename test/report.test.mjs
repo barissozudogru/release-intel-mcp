@@ -89,3 +89,14 @@ test("report rejects a to ref with surrounding whitespace", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
+
+test("report rejects refs containing control characters", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1\nbad", "v2"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
