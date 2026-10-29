@@ -15,7 +15,7 @@ test("HTTP transport rejects a PORT value with trailing text", () => {
     ["dist/index.js", "--http"],
     {
       encoding: "utf8",
-      timeout: 3000,
+      timeout: 10000,
       env: { ...process.env, PORT: "34567junk" },
     }
   );

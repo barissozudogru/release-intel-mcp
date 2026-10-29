@@ -369,3 +369,37 @@ test("direct commit outputs ignore whitespace-only author logins", async () => {
     await client.close().catch(() => undefined);
   }
 });
+
+test("change output does not expose whitespace-only author logins", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "whitespace-change-author-login-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'abc12345',commit:{message:'direct commit',author:{name:'Fallback Name',email:'fallback@example.test',date:''}},author:{login:'   '},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "whitespace-change-author-login-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.commits[0].author_login, null);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
