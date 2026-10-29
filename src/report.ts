@@ -52,6 +52,8 @@ if (
   !toRef?.trim() ||
   fromRef !== fromRef.trim() ||
   toRef !== toRef.trim() ||
+  /[\u0000-\u001F\u007F]/.test(fromRef) ||
+  /[\u0000-\u001F\u007F]/.test(toRef) ||
   !repository.includes("/")
 ) {
   usage(1);
