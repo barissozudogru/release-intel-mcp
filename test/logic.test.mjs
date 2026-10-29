@@ -142,7 +142,7 @@ test("summarizeBody truncates long bodies with an ellipsis", () => {
 });
 
 test("summarizeBody never exceeds a small custom maximum", () => {
-  for (const [body, maxLength, expected] of [["abcdef", 2, "ab"], ["a".repeat(30), 4, "a..."], ["a".repeat(30), 10, "aaaaaaa..."]]) {
+  for (const [body, maxLength, expected] of [["abcdef", 2, "ab"], ["abcdef", 3.5, "abc"], ["a".repeat(30), 4, "a..."], ["a".repeat(30), 10, "aaaaaaa..."]]) {
     const result = summarizeBody(body, maxLength);
     assert.equal(result, expected);
     assert.ok(result.length <= maxLength);
