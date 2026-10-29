@@ -150,6 +150,10 @@ function commitAuthorLogin(commit: GitHubCommit): string {
   return commit.author?.login?.trim() || commitAuthorName(commit);
 }
 
+function pullRequestAuthorLogin(pr: Pick<GitHubPR, "user">): string {
+  return pr.user?.login?.trim() || "unknown";
+}
+
 function commitAuthorEmail(commit: GitHubCommit): string {
   return commit.commit.author?.email ?? "";
 }
@@ -371,7 +375,7 @@ server.registerTool(
           title: pr.title,
           url: pr.html_url,
           // Fix #7: use PR author (pr.user.login), not commit author
-          author: pr.user.login,
+          author: pullRequestAuthorLogin(pr),
           merged_at: pr.merged_at,
           labels,
           category,
@@ -526,7 +530,7 @@ server.registerTool(
                 first_commit_message: firstCommitLine,
               });
               // Fix #7: PR count goes to PR author, not commit author
-              const prAuthorLogin = pr.user.login;
+              const prAuthorLogin = pullRequestAuthorLogin(pr);
               const prContributor = contributorMap.get(prAuthorLogin);
               if (prContributor) {
                 prContributor.prs += 1;
@@ -587,7 +591,7 @@ server.registerTool(
         title: pr.title,
         url: pr.html_url,
         // Fix #7: use PR author login
-        author: pr.user.login,
+        author: pullRequestAuthorLogin(pr),
         merged_at: pr.merged_at,
         labels: pr.labels.map((l) => l.name),
         body_summary: pr.body_summary,
