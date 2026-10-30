@@ -90,6 +90,8 @@ test("categorizePRByLabels ignores surrounding label whitespace", () => {
 
 test("categorizePRByLabels avoids false positives from substrings", () => {
   assert.equal(categorizePRByLabels(["suffix"]), "other");
+  assert.equal(categorizePRByLabels(["featureé"]), "other");
+  assert.equal(categorizePRByLabels(["feature\u0301"]), "other");
   assert.equal(categorizePRByLabels(["defeat"]), "other");
   assert.equal(categorizePRByLabels(["docker"]), "other");
   assert.equal(categorizePRByLabels(["deploy"]), "other");

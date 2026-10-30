@@ -51,16 +51,18 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
   const lower = labels
     .map((l) => l.trim().toLowerCase())
     .filter((l) => !/^(?:not|non)[-_ ]/.test(l));
+  const hasLabelTerm = (label: string, terms: string): boolean =>
+    new RegExp(String.raw`(?<![\p{L}\p{N}\p{M}_])(?:${terms})(?![\p{L}\p{N}\p{M}_])`, "u").test(label);
   // Release PRs are bookkeeping, not change content. They are checked first
   // because their bodies quote the whole changelog, which otherwise pulls them
   // into whichever category the quoted text happens to match.
   if (lower.some((l) => /^(?:autorelease|release-please)(?:$|[: ])/.test(l))) return "release";
   if (lower.some((l) => /^breaking(?:[- ]change)?$/.test(l))) return "breaking";
-  if (lower.some((l) => /\b(?:feature|feat|enhancement)s?\b/.test(l))) return "feature";
-  if (lower.some((l) => /\b(?:fix(?:es|ed)?|bug(?:s|fix|fixes)?|hotfix(?:es)?)\b/.test(l))) return "fix";
-  if (lower.some((l) => /\b(?:doc|docs|documentation)\b/.test(l))) return "docs";
-  if (lower.some((l) => /\b(?:dep|deps|dependency|dependencies)\b/.test(l))) return "dependencies";
-  if (lower.some((l) => /\b(?:chore|ci|refactor|test|tests|testing)\b/.test(l))) return "chore";
+  if (lower.some((l) => hasLabelTerm(l, String.raw`(?:feature|feat|enhancement)s?`))) return "feature";
+  if (lower.some((l) => hasLabelTerm(l, String.raw`(?:fix(?:es|ed)?|bug(?:s|fix|fixes)?|hotfix(?:es)?)`))) return "fix";
+  if (lower.some((l) => hasLabelTerm(l, String.raw`(?:doc|docs|documentation)`))) return "docs";
+  if (lower.some((l) => hasLabelTerm(l, String.raw`(?:dep|deps|dependency|dependencies)`))) return "dependencies";
+  if (lower.some((l) => hasLabelTerm(l, String.raw`(?:chore|ci|refactor|test|tests|testing)`))) return "chore";
 
   // Fallback: parse conventional commit prefix from commit message
   if (commitMessage) {
