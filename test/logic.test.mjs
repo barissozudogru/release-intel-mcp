@@ -23,6 +23,10 @@ test("extractLinkedIssues picks up close/fix/resolve keywords", () => {
   assert.deepEqual(extractLinkedIssues("Resolves: #100"), [100]);
 });
 
+test("extractLinkedIssues accepts a closing keyword with no space after its colon", () => {
+  assert.deepEqual(extractLinkedIssues("Closes:#123"), [123]);
+});
+
 test("extractLinkedIssues collects grouped references after one closing keyword", () => {
   assert.deepEqual(extractLinkedIssues("Closes #12, #34 and owner/repository#56"), [12, 34, 56]);
 });
