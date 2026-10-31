@@ -583,7 +583,9 @@ server.registerTool(
       );
 
       const contributors = Array.from(contributorMap.values()).sort(
-        (a, b) => b.commits - a.commits || a.login.localeCompare(b.login)
+        (a, b) =>
+          b.commits - a.commits ||
+          (a.login < b.login ? -1 : a.login > b.login ? 1 : 0)
       );
 
       const formatPR = (pr: (typeof allPRs)[0]) => ({
