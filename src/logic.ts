@@ -50,7 +50,7 @@ export function summarizeBody(body: string | null, maxLength?: number): string {
 export function categorizePRByLabels(labels: string[], commitMessage = ""): string {
   const lower = labels
     .map((l) => l.trim().toLowerCase())
-    .filter((l) => !/^(?:not|non)[-_ ]/.test(l));
+    .filter((l) => !/^(?:not|non)[-_ :]/.test(l));
   const hasLabelTerm = (label: string, terms: string): boolean =>
     new RegExp(String.raw`(?<![\p{L}\p{N}\p{M}_])(?:${terms})(?![\p{L}\p{N}\p{M}_])`, "u").test(label);
   // Release PRs are bookkeeping, not change content. They are checked first
