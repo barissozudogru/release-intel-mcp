@@ -57,35 +57,6 @@ async function githubGet<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// Fix #9: add maxPages guard to prevent infinite loops
-async function githubGetPaginated<T>(url: string, maxPages = 100): Promise<T[]> {
-  const results: T[] = [];
-  let nextUrl: string | null = url;
-  let page = 0;
-  while (nextUrl) {
-    if (page >= maxPages) {
-      console.error(`githubGetPaginated: maxPages (${maxPages}) reached for ${url}, stopping early`);
-      break;
-    }
-    // Fix #12: timeout on paginated calls too
-    const response: Response = await fetch(nextUrl, {
-      headers: githubHeaders(),
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      throw new Error(`GitHub API error ${response.status} for ${nextUrl}: ${body}`);
-    }
-    const data = (await response.json()) as T[];
-    results.push(...data);
-    const linkHeader: string = response.headers.get("link") ?? "";
-    const nextMatch: RegExpMatchArray | null = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
-    nextUrl = nextMatch ? nextMatch[1] : null;
-    page++;
-  }
-  return results;
-}
-
 // Fix #2: concurrency limiter to avoid hitting rate limits with 250 simultaneous requests
 async function batchAsync<T, R>(items: T[], fn: (item: T) => Promise<R>, concurrency = 10): Promise<R[]> {
   const results: R[] = [];
