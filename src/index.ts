@@ -155,7 +155,7 @@ function pullRequestAuthorLogin(pr: Pick<GitHubPR, "user">): string {
 }
 
 function commitAuthorEmail(commit: GitHubCommit): string {
-  return commit.commit.author?.email ?? "";
+  return commit.commit.author?.email?.trim() ?? "";
 }
 
 function commitAuthorDate(commit: GitHubCommit): string {
