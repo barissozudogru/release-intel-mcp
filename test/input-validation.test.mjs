@@ -64,8 +64,8 @@ test("release summary sorts equal-count contributors by login", async () => {
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
           "const value=String(url);" +
           "if(value.includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[" +
-          "{sha:'first',commit:{message:'first',author:{name:'First',email:'first@example.test',date:'2026-01-01'}},author:{login:'alice'},html_url:'https://example.test/first'}," +
-          "{sha:'second',commit:{message:'second',author:{name:'Second',email:'second@example.test',date:'2026-01-02'}},author:{login:'bob'},html_url:'https://example.test/second'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200,headers:{'content-type':'application/json'}});" +
+          "{sha:'first',commit:{message:'first',author:{name:'First',email:'first@example.test',date:'2026-01-01'}},author:{login:'zulu'},html_url:'https://example.test/first'}," +
+          "{sha:'second',commit:{message:'second',author:{name:'Second',email:'second@example.test',date:'2026-01-02'}},author:{login:'äda'},html_url:'https://example.test/second'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200,headers:{'content-type':'application/json'}});" +
           "await new Promise(resolve=>setTimeout(resolve,value.includes('/second/pulls')?0:20));" +
           "const login=value.includes('/second/pulls')?'dana':'charlie';" +
           "return new Response(JSON.stringify([{number:value.includes('/second/pulls')?2:1,title:'Feature',body:null,state:'closed',merged_at:'2026-01-03',html_url:'https://example.test/pr',user:{login},labels:[],comments:0,draft:false}]),{status:200,headers:{'content-type':'application/json'}});" +
@@ -84,8 +84,8 @@ test("release summary sorts equal-count contributors by login", async () => {
     assert.equal(result.isError, undefined);
     const data = JSON.parse(result.content[0].text);
     assert.deepEqual(data.contributors.map((contributor) => contributor.login), [
-      "alice",
-      "bob",
+      "zulu",
+      "äda",
       "charlie",
       "dana",
     ]);
