@@ -104,6 +104,7 @@ test("categorizePRByLabels ignores explicitly negated category labels", () => {
   assert.equal(categorizePRByLabels(["not-a-bug"]), "other");
   assert.equal(categorizePRByLabels(["not-a-feature"]), "other");
   assert.equal(categorizePRByLabels(["not-docs"]), "other");
+  assert.equal(categorizePRByLabels(["not:bug"]), "other");
 });
 
 test("categorizePRByLabels falls back to conventional commit prefixes", () => {
