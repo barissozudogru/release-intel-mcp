@@ -394,7 +394,7 @@ server.registerTool(
       enrichedPRs.sort((a, b) => {
         const aTime = a.merged_at ? new Date(a.merged_at).getTime() : 0;
         const bTime = b.merged_at ? new Date(b.merged_at).getTime() : 0;
-        return bTime - aTime;
+        return bTime - aTime || a.number - b.number;
       });
 
       for (const pr of enrichedPRs) {
