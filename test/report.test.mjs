@@ -90,6 +90,50 @@ test("report rejects a to ref with surrounding whitespace", () => {
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
 
+test("report rejects refs with Git range syntax", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1:v2", "v3"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
+
+test("report rejects Git range syntax in the to ref", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1", "v2:v3"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
+
+test("report rejects two-dot syntax in the from ref", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1..v2", "v3"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
+
+test("report rejects two-dot syntax in the to ref", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1", "v2..v3"],
+    { encoding: "utf8", timeout: 3000 }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+});
+
 test("report rejects refs containing control characters", () => {
   const result = spawnSync(
     process.execPath,
