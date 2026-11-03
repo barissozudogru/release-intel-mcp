@@ -20,6 +20,10 @@ const invalidRefCases = [
     name: "get_changes_between_refs",
     arguments: { owner: "owner", repo: "repo", base: "v1\u0000", head: "v2" },
   },
+  {
+    name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "v1..v2", head: "v3" },
+  },
 ];
 
 test("MCP tools reject empty or padded refs before making an API request", async () => {
