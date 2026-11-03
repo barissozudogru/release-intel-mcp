@@ -197,6 +197,7 @@ server.registerTool(
           `Warning: Only ${comparison.commits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
         );
       }
+      const fileStats = calculateFileStats(comparison.files);
       const fileWarning = fileStatsWarning(comparison.files);
       if (fileWarning) warnings.push(fileWarning);
 
@@ -265,7 +266,7 @@ server.registerTool(
         status: comparison.status,
         ahead_by: comparison.ahead_by,
         total_commits: comparison.total_commits,
-        files_changed: comparison.files?.length ?? 0,
+        files_changed: fileStats.truncated ? null : fileStats.total_files_changed ?? 0,
         commits: enrichedCommits,
       };
 

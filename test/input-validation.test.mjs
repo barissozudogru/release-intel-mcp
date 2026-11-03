@@ -193,6 +193,8 @@ test("get changes warns when the compare file list reaches GitHub's limit", asyn
     assert.equal(result.isError, undefined);
     assert.match(result.content[0].text, /Warning: File comparison was truncated at 300 files/);
     assert.match(result.content[0].text, /"warnings":\["Warning: File comparison was truncated/);
+    const data = JSON.parse(result.content[0].text.slice(result.content[0].text.indexOf("{")));
+    assert.equal(data.files_changed, null);
   } finally {
     await client.close().catch(() => undefined);
   }
