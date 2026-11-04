@@ -192,6 +192,40 @@ test("change output falls back to the login when the commit author name is blank
   }
 });
 
+test("change output ignores pull requests without merged status", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "missing-merged-status-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'commit',commit:{message:'change',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([{number:1,title:'Unmerged',body:null,state:'open',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "missing-merged-status-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.commits[0].pr_number, null);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("get changes warns when the compare file list reaches GitHub's limit", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
