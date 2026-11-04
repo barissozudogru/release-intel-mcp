@@ -255,6 +255,16 @@ test("calculateFileStats handles empty or null file lists", () => {
   assert.equal(fromNull.lines_deleted, 0);
 });
 
+test("calculateFileStats treats a malformed top-level file list as empty", () => {
+  const stats = calculateFileStats({});
+  assert.deepEqual(stats, {
+    truncated: false,
+    total_files_changed: 0,
+    lines_added: 0,
+    lines_deleted: 0,
+  });
+});
+
 test("calculateFileStats does not mark an empty list truncated at a zero limit", () => {
   const stats = calculateFileStats([], 0);
   assert.equal(stats.truncated, false);
