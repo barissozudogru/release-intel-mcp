@@ -310,6 +310,19 @@ test("calculateFileStats ignores non-finite per-file line counts", () => {
   assert.equal(stats.lines_deleted, 2);
 });
 
+test("calculateFileStats ignores malformed file entries", () => {
+  const stats = calculateFileStats([
+    null,
+    undefined,
+    7,
+    "malformed",
+    { additions: 4, deletions: 2 },
+  ]);
+  assert.equal(stats.total_files_changed, 5);
+  assert.equal(stats.lines_added, 4);
+  assert.equal(stats.lines_deleted, 2);
+});
+
 test("calculateFileStats ignores negative per-file line counts", () => {
   const stats = calculateFileStats([
     { additions: -3, deletions: -2 },
