@@ -204,6 +204,7 @@ test("release PRs are categorized as releases, not fixes", () => {
   assert.equal(categorizePRByLabels([], "release: 1.4.0"), "release");
   assert.equal(categorizePRByLabels([], "chore(release): 1.4.0"), "release");
   assert.equal(categorizePRByLabels(["release-please"], "anything"), "release");
+  assert.equal(categorizePRByLabels(["release"], "ordinary title"), "release");
 });
 
 test("ordinary PRs are unaffected by the release rule", () => {
