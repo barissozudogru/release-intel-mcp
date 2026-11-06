@@ -559,6 +559,11 @@ server.registerTool(
       }
 
       const allPRs = Array.from(prMap.values());
+      allPRs.sort((a, b) => {
+        const aTime = a.merged_at ? new Date(a.merged_at).getTime() : 0;
+        const bTime = b.merged_at ? new Date(b.merged_at).getTime() : 0;
+        return bTime - aTime || a.number - b.number;
+      });
 
       const breaking = allPRs.filter((pr) => pr.category === "breaking");
       const features = allPRs.filter((pr) => pr.category === "feature");
