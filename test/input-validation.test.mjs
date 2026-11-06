@@ -118,6 +118,44 @@ test("release summary sorts equal-count contributors by login", async () => {
   }
 });
 
+test("release summary keeps pull request order stable when lookups finish out of order", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "summary-pr-order-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "const value=String(url);" +
+          "if(value.includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[" +
+          "{sha:'first',commit:{message:'first',author:{name:'First',email:'first@example.test',date:'2026-01-01'}},author:{login:'first'},html_url:'https://example.test/first'}," +
+          "{sha:'second',commit:{message:'second',author:{name:'Second',email:'second@example.test',date:'2026-01-02'}},author:{login:'second'},html_url:'https://example.test/second'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200});" +
+          "await new Promise(resolve=>setTimeout(resolve,value.includes('/first/pulls')?20:0));" +
+          "const number=value.includes('/first/pulls')?1:2;" +
+          "return new Response(JSON.stringify([{number,title:'feat: PR '+number,body:null,state:'closed',merged_at:'2026-01-03T00:00:00Z',html_url:'https://example.test/pr/'+number,user:{login:'author'+number},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "summary-pr-order-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.deepEqual(data.features.map((pr) => pr.number), [1, 2]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("pull requests with equal merge times use a stable number order", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
