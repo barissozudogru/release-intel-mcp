@@ -9,6 +9,10 @@ const invalidRefCases = [
     arguments: { owner: "owner", repo: "repo", base: "", head: "v1" },
   },
   {
+    name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "v1.", head: "v1" },
+  },
+  {
     name: "get_pull_requests_in_range",
     arguments: { owner: "owner", repo: "repo", base: "v1", head: " v2" },
   },
@@ -86,7 +90,7 @@ const invalidRefCases = [
   },
 ];
 
-test("MCP tools reject empty or padded refs before making an API request", async () => {
+test("MCP tools reject malformed refs before making an API request", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["dist/index.js"],

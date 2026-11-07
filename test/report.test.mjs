@@ -157,6 +157,29 @@ test("report rejects a single-dot ref in either position before fetching", () =>
   }
 });
 
+test("report rejects refs ending with a dot before fetching", () => {
+  const env = {
+    ...process.env,
+    GITHUB_TOKEN: "trailing-dot-ref-test-token",
+    NODE_OPTIONS: [
+      process.env.NODE_OPTIONS,
+      `--import=${encodeURI("data:text/javascript,globalThis.fetch=async()=>{throw new Error('FETCH_CALLED')}")}`,
+    ].filter(Boolean).join(" "),
+  };
+
+  for (const refs of [["v1.", "v2"], ["v1", "v2."]]) {
+    const result = spawnSync(
+      process.execPath,
+      ["dist/report.js", "owner/repo", ...refs],
+      { encoding: "utf8", timeout: 3000, env }
+    );
+
+    assert.equal(result.status, 1, refs.join(" -> "));
+    assert.match(result.stderr, /Usage: release-intel-report/, refs.join(" -> "));
+    assert.doesNotMatch(result.stderr, /FETCH_CALLED/, refs.join(" -> "));
+  }
+});
+
 test("report rejects refs containing control characters", () => {
   const result = spawnSync(
     process.execPath,
