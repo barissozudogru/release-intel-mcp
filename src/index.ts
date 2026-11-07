@@ -27,7 +27,7 @@ const refSchema = z
   .refine((ref) => !ref.includes(".."), "Reference must not contain '..'")
   .refine((ref) => ref !== ".", "Reference must not be '.'")
   .refine((ref) => !ref.includes("@{"), "Reference must not contain '@{'")
-  .refine((ref) => !/[?*^~]/.test(ref), "Reference must not contain wildcard or revision operator characters")
+  .refine((ref) => !/[?*^~\[]/.test(ref), "Reference must not contain wildcard or revision operator characters")
   .refine((ref) => !/[\u0000-\u001F\u007F]/.test(ref), "Reference must not contain control characters");
 
 // Fix #15: validate token at call-site (startup check is done in main())

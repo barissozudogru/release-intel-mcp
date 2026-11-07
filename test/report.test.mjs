@@ -239,3 +239,26 @@ for (const operator of ["^", "~"]) {
     assert.doesNotMatch(result.stderr, /FETCH_CALLED/);
   });
 }
+
+test("report rejects open brackets in either ref before fetching", () => {
+  const env = {
+    ...process.env,
+    GITHUB_TOKEN: "bracket-ref-test-token",
+    NODE_OPTIONS: [
+      process.env.NODE_OPTIONS,
+      `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async()=>{throw new Error('FETCH_CALLED')}")}`,
+    ].filter(Boolean).join(" "),
+  };
+
+  for (const refs of [["v[1", "v2"], ["v1", "v[2"]]) {
+    const result = spawnSync(
+      process.execPath,
+      ["dist/report.js", "owner/repo", ...refs],
+      { encoding: "utf8", timeout: 3000, env }
+    );
+
+    assert.equal(result.status, 1, refs.join(" -> "));
+    assert.match(result.stderr, /Usage: release-intel-report/, refs.join(" -> "));
+    assert.doesNotMatch(result.stderr, /FETCH_CALLED/, refs.join(" -> "));
+  }
+});
