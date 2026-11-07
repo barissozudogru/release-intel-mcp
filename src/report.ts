@@ -58,6 +58,8 @@ if (
   toRef.includes("..") ||
   fromRef === "." ||
   toRef === "." ||
+  fromRef.endsWith(".") ||
+  toRef.endsWith(".") ||
   fromRef.includes("@{") ||
   toRef.includes("@{") ||
   /[?*^~\[]/.test(fromRef) ||
