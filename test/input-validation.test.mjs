@@ -60,6 +60,30 @@ const invalidRefCases = [
     name: "get_release_summary",
     arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2~1" },
   },
+  {
+    name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "v[1", head: "v2" },
+  },
+  {
+    name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "v1", head: "v[2" },
+  },
+  {
+    name: "get_pull_requests_in_range",
+    arguments: { owner: "owner", repo: "repo", base: "v[1", head: "v2" },
+  },
+  {
+    name: "get_pull_requests_in_range",
+    arguments: { owner: "owner", repo: "repo", base: "v1", head: "v[2" },
+  },
+  {
+    name: "get_release_summary",
+    arguments: { owner: "owner", repo: "repo", from_tag: "v[1", to_tag: "v2" },
+  },
+  {
+    name: "get_release_summary",
+    arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v[2" },
+  },
 ];
 
 test("MCP tools reject empty or padded refs before making an API request", async () => {
