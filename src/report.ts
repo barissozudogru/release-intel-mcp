@@ -60,6 +60,8 @@ if (
   toRef === "." ||
   fromRef.endsWith(".") ||
   toRef.endsWith(".") ||
+  fromRef.endsWith("/") ||
+  toRef.endsWith("/") ||
   fromRef.includes("@{") ||
   toRef.includes("@{") ||
   /[?*^~\[]/.test(fromRef) ||

@@ -27,6 +27,7 @@ const refSchema = z
   .refine((ref) => !ref.includes(".."), "Reference must not contain '..'")
   .refine((ref) => ref !== ".", "Reference must not be '.'")
   .refine((ref) => !ref.endsWith("."), "Reference must not end with '.'")
+  .refine((ref) => !ref.endsWith("/"), "Reference must not end with '/'")
   .refine((ref) => !ref.includes("@{"), "Reference must not contain '@{'")
   .refine((ref) => !/[?*^~\[]/.test(ref), "Reference must not contain wildcard or revision operator characters")
   .refine((ref) => !/[\u0000-\u001F\u007F]/.test(ref), "Reference must not contain control characters");
