@@ -291,7 +291,7 @@ test("change output ignores pull requests without merged status", async () => {
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
           "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
           "{sha:'commit',commit:{message:'change',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
-          "return new Response(JSON.stringify([{number:1,title:'Unmerged',body:null,state:'open',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],comments:0,draft:false}]),{status:200});" +
+          "return new Response(JSON.stringify([{number:1,title:'Unmerged',body:null,state:'open',merged_at:'   ',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],comments:0,draft:false}]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
     },
@@ -307,6 +307,20 @@ test("change output ignores pull requests without merged status", async () => {
     assert.equal(result.isError, undefined);
     const data = JSON.parse(result.content[0].text);
     assert.equal(data.commits[0].pr_number, null);
+
+    const pullRequests = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(pullRequests.isError, undefined);
+    assert.equal(JSON.parse(pullRequests.content[0].text).total_prs, 0);
+
+    const summary = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(summary.isError, undefined);
+    assert.equal(JSON.parse(summary.content[0].text).stats.total_prs, 0);
   } finally {
     await client.close().catch(() => undefined);
   }
