@@ -169,6 +169,12 @@ function commitAuthorDate(commit: GitHubCommit): string {
   return commit.commit.author?.date ?? "";
 }
 
+function mergeTimestamp(value: string | null): number {
+  if (!value?.trim()) return 0;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 // Fix #17: use VERSION from package.json
 const server = new McpServer(
   { name: "release-intel-mcp", version: VERSION },
@@ -402,8 +408,8 @@ server.registerTool(
 
       // Sort by merged_at descending
       enrichedPRs.sort((a, b) => {
-        const aTime = a.merged_at ? new Date(a.merged_at).getTime() : 0;
-        const bTime = b.merged_at ? new Date(b.merged_at).getTime() : 0;
+        const aTime = mergeTimestamp(a.merged_at);
+        const bTime = mergeTimestamp(b.merged_at);
         return bTime - aTime || a.number - b.number;
       });
 
@@ -566,8 +572,8 @@ server.registerTool(
 
       const allPRs = Array.from(prMap.values());
       allPRs.sort((a, b) => {
-        const aTime = a.merged_at ? new Date(a.merged_at).getTime() : 0;
-        const bTime = b.merged_at ? new Date(b.merged_at).getTime() : 0;
+        const aTime = mergeTimestamp(a.merged_at);
+        const bTime = mergeTimestamp(b.merged_at);
         return bTime - aTime || a.number - b.number;
       });
 

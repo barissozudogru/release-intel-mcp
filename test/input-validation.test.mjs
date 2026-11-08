@@ -242,6 +242,82 @@ test("pull requests with equal merge times use a stable number order", async () 
   }
 });
 
+test("pull requests with invalid merge times still sort deterministically", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "invalid-merge-time-order-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "const value=String(url);" +
+          "if(value.includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[" +
+          "{sha:'first',commit:{message:'first',author:{name:'First',email:'first@example.test',date:'2026-01-01'}},author:{login:'first'},html_url:'https://example.test/first'}," +
+          "{sha:'second',commit:{message:'second',author:{name:'Second',email:'second@example.test',date:'2026-01-02'}},author:{login:'second'},html_url:'https://example.test/second'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200});" +
+          "const number=value.includes('/first/pulls')?1:2;" +
+          "const mergedAt=number===1?'not-a-timestamp':'2026-01-03T00:00:00Z';" +
+          "return new Response(JSON.stringify([{number,title:'PR '+number,body:null,state:'closed',merged_at:mergedAt,html_url:'https://example.test/pr/'+number,user:{login:'author'+number},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "invalid-merge-time-order-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.deepEqual(data.categorized.other.map((pr) => pr.number), [2, 1]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
+test("release summary sorts invalid merge times deterministically", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "invalid-summary-merge-time-order-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "const value=String(url);" +
+          "if(value.includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[" +
+          "{sha:'first',commit:{message:'first',author:{name:'First',email:'first@example.test',date:'2026-01-01'}},author:{login:'first'},html_url:'https://example.test/first'}," +
+          "{sha:'second',commit:{message:'second',author:{name:'Second',email:'second@example.test',date:'2026-01-02'}},author:{login:'second'},html_url:'https://example.test/second'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200});" +
+          "const number=value.includes('/first/pulls')?1:2;" +
+          "const mergedAt=number===1?'not-a-timestamp':'2026-01-03T00:00:00Z';" +
+          "return new Response(JSON.stringify([{number,title:'PR '+number,body:null,state:'closed',merged_at:mergedAt,html_url:'https://example.test/pr/'+number,user:{login:'author'+number},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "invalid-summary-merge-time-order-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.deepEqual(data.other.map((pr) => pr.number), [2, 1]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("change output falls back to the login when the commit author name is blank", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
