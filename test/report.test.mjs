@@ -261,6 +261,29 @@ for (const wildcard of ["?", "*"]) {
   });
 }
 
+test("report rejects refs containing backslashes", () => {
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "v1\\bad", "v2"],
+    {
+      encoding: "utf8",
+      timeout: 3000,
+      env: {
+        ...process.env,
+        GITHUB_TOKEN: "backslash-ref-test-token",
+        NODE_OPTIONS: [
+          process.env.NODE_OPTIONS,
+          `--import=${encodeURI("data:text/javascript,globalThis.fetch=async()=>{throw new Error('FETCH_CALLED')}")}`,
+        ].filter(Boolean).join(" "),
+      },
+    }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+  assert.doesNotMatch(result.stderr, /FETCH_CALLED/);
+});
+
 for (const operator of ["^", "~"]) {
   test(`report rejects refs containing ${operator}`, () => {
     const result = spawnSync(
