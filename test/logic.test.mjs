@@ -368,6 +368,12 @@ test("formatStat returns N/A for null or undefined and preserves numbers includi
   assert.equal(formatStat(42), 42);
 });
 
+test("formatStat returns N/A for non-finite statistics", () => {
+  assert.equal(formatStat(Number.NaN), "N/A");
+  assert.equal(formatStat(Number.POSITIVE_INFINITY), "N/A");
+  assert.equal(formatStat(Number.NEGATIVE_INFINITY), "N/A");
+});
+
 test("renderMarkdown formats release evidence table with numbers when file statistics are present", () => {
   const data = {
     repository: "owner/repo",

@@ -164,9 +164,9 @@ export interface ReleaseContext {
   warnings?: string[];
 }
 
-// Display N/A for undefined statistics so omitted counts are not rendered as zero
+// Display N/A for unavailable or non-finite statistics so invalid counts are not rendered.
 export function formatStat(value: number | null | undefined): string | number {
-  return value ?? "N/A";
+  return value == null || !Number.isFinite(value) ? "N/A" : value;
 }
 
 export function renderItems(title: string, items: ReleaseItem[]): string[] {
