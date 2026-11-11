@@ -96,6 +96,10 @@ const invalidRefCases = [
     name: "get_changes_between_refs",
     arguments: { owner: "owner", repo: "repo", base: "v1\\bad", head: "v2" },
   },
+  {
+    name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "release/.hidden", head: "v2" },
+  },
 ];
 
 test("MCP tools reject malformed refs before making an API request", async () => {

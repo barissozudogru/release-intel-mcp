@@ -64,6 +64,8 @@ if (
   toRef.endsWith("/") ||
   fromRef.includes("@{") ||
   toRef.includes("@{") ||
+  fromRef.split("/").some((component) => component.startsWith(".")) ||
+  toRef.split("/").some((component) => component.startsWith(".")) ||
   /[?*^~\[\\]/.test(fromRef) ||
   /[?*^~\[\\]/.test(toRef) ||
   /[\u0000-\u001F\u007F]/.test(fromRef) ||
