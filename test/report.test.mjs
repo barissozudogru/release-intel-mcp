@@ -143,6 +143,27 @@ test("report rejects refs with empty path components", () => {
   assert.doesNotMatch(result.stderr, /FETCH_CALLED/);
 });
 
+test("report rejects refs containing whitespace before fetching", () => {
+  const env = {
+    ...process.env,
+    GITHUB_TOKEN: "whitespace-ref-test-token",
+    NODE_OPTIONS: [
+      process.env.NODE_OPTIONS,
+      `--import=${encodeURI("data:text/javascript,globalThis.fetch=async()=>{throw new Error('FETCH_CALLED')}")}`,
+    ].filter(Boolean).join(" "),
+  };
+
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "release/ candidate", "v2"],
+    { encoding: "utf8", timeout: 3000, env }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+  assert.doesNotMatch(result.stderr, /FETCH_CALLED/);
+});
+
 test("report rejects Git range syntax in the to ref", () => {
   const result = spawnSync(
     process.execPath,
