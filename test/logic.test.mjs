@@ -119,6 +119,7 @@ test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "deps: bump zod"), "dependencies");
   assert.equal(categorizePRByLabels([], "feat!: drop legacy api"), "breaking");
   assert.equal(categorizePRByLabels([], "feat(auth)!: remove old login"), "breaking");
+  assert.equal(categorizePRByLabels([], "BREAKING-CHANGE: remove old login"), "breaking");
 });
 
 test("categorizePRByLabels does not treat an embedded breaking-change phrase as a prefix", () => {
