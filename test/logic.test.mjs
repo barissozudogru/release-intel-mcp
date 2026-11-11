@@ -428,6 +428,31 @@ test("renderMarkdown handles omitted file statistics with N/A instead of mislead
   assert.match(markdown, /## Warnings/);
 });
 
+test("renderMarkdown handles non-finite aggregate statistics", () => {
+  const data = {
+    repository: "owner/repo",
+    from_tag: "v1.0.0",
+    to_tag: "v2.0.0",
+    stats: {
+      total_commits: Number.NaN,
+      total_prs: Number.POSITIVE_INFINITY,
+      total_contributors: Number.NEGATIVE_INFINITY,
+    },
+    contributors: [],
+    breaking_changes: [],
+    features: [],
+    fixes: [],
+    docs: [],
+    dependencies: [],
+    other: [],
+    all_commits: [],
+  };
+
+  const markdown = renderMarkdown(data);
+  assert.match(markdown, /\| N\/A \| N\/A \| N\/A \| N\/A \| N\/A \| N\/A \|/);
+  assert.doesNotMatch(markdown, /NaN|Infinity/);
+});
+
 test("renderMarkdown includes chore and release pull request evidence", () => {
   const data = {
     repository: "owner/repo",
