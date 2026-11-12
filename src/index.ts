@@ -27,6 +27,7 @@ const refSchema = z
   .refine((ref) => !ref.includes(".."), "Reference must not contain '..'")
   .refine((ref) => ref !== ".", "Reference must not be '.'")
   .refine((ref) => !ref.endsWith("."), "Reference must not end with '.'")
+  .refine((ref) => !ref.split("/").some((component) => component.endsWith(".lock")), "Reference components must not end with '.lock'")
   .refine((ref) => !ref.endsWith("/"), "Reference must not end with '/'")
   .refine((ref) => !ref.includes("@{"), "Reference must not contain '@{'")
   .refine((ref) => !/\s/.test(ref), "Reference must not contain whitespace")

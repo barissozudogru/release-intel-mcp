@@ -60,6 +60,8 @@ if (
   toRef === "." ||
   fromRef.endsWith(".") ||
   toRef.endsWith(".") ||
+  fromRef.split("/").some((component) => component.endsWith(".lock")) ||
+  toRef.split("/").some((component) => component.endsWith(".lock")) ||
   fromRef.endsWith("/") ||
   toRef.endsWith("/") ||
   fromRef.includes("@{") ||
