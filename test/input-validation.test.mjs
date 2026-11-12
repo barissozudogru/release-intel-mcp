@@ -14,6 +14,10 @@ const invalidRefCases = [
   },
   {
     name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "release.lock", head: "v1" },
+  },
+  {
+    name: "get_changes_between_refs",
     arguments: { owner: "owner", repo: "repo", base: "v1/", head: "v1" },
   },
   {

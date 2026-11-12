@@ -243,6 +243,27 @@ test("report rejects refs ending with a dot before fetching", () => {
   }
 });
 
+test("report rejects refs ending with .lock before fetching", () => {
+  const env = {
+    ...process.env,
+    GITHUB_TOKEN: "lock-ref-test-token",
+    NODE_OPTIONS: [
+      process.env.NODE_OPTIONS,
+      `--import=${encodeURI("data:text/javascript,globalThis.fetch=async()=>{throw new Error('FETCH_CALLED')}")}`,
+    ].filter(Boolean).join(" "),
+  };
+
+  const result = spawnSync(
+    process.execPath,
+    ["dist/report.js", "owner/repo", "release.lock", "v2"],
+    { encoding: "utf8", timeout: 3000, env }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Usage: release-intel-report/);
+  assert.doesNotMatch(result.stderr, /FETCH_CALLED/);
+});
+
 test("report rejects refs ending with a slash before fetching", () => {
   const env = {
     ...process.env,
