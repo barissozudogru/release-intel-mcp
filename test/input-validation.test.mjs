@@ -775,3 +775,38 @@ test("release summary normalizes whitespace-only pull request author logins", as
     await client.close().catch(() => undefined);
   }
 });
+
+test("release summary merges contributor logins that differ only by case", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "case-insensitive-contributor-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "const value=String(url);" +
+          "if(value.includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'commit',commit:{message:'feat: add feature',author:{name:'Alice',email:'alice@example.test',date:'2026-01-01'}},author:{login:'Alice'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([{number:1,title:'Feature',body:null,state:'closed',merged_at:'2026-01-02',html_url:'https://example.test/pr/1',user:{login:'alice'},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "case-insensitive-contributor-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.deepEqual(data.contributors, [{ login: "Alice", name: "Alice", commits: 1, prs: 1 }]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
