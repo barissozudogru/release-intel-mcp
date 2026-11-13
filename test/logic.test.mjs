@@ -416,6 +416,10 @@ test("formatStat returns N/A for fractional statistics", () => {
   assert.equal(formatStat(1.5), "N/A");
 });
 
+test("formatStat returns N/A for negative count statistics", () => {
+  assert.equal(formatStat(-1), "N/A");
+});
+
 test("renderMarkdown formats release evidence table with numbers when file statistics are present", () => {
   const data = {
     repository: "owner/repo",
