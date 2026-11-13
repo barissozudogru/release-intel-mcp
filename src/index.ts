@@ -167,6 +167,10 @@ function pullRequestAuthorLogin(pr: Pick<GitHubPR, "user">): string {
   return pr.user?.login?.trim() || "unknown";
 }
 
+function contributorKey(login: string): string {
+  return login.toLowerCase();
+}
+
 function commitAuthorEmail(commit: GitHubCommit): string {
   return commit.commit.author?.email?.trim() ?? "";
 }
@@ -525,11 +529,12 @@ server.registerTool(
         const name = commitAuthorName(commit);
         const firstCommitLine = commit.commit.message.split("\n")[0].trim();
 
-        const existing = contributorMap.get(login);
+        const key = contributorKey(login);
+        const existing = contributorMap.get(key);
         if (existing) {
           existing.commits += 1;
         } else {
-          contributorMap.set(login, { login, name, commits: 1, prs: 0 });
+          contributorMap.set(key, { login, name, commits: 1, prs: 0 });
         }
 
         try {
@@ -553,12 +558,12 @@ server.registerTool(
               });
               // Fix #7: PR count goes to PR author, not commit author
               const prAuthorLogin = pullRequestAuthorLogin(pr);
-              const prContributor = contributorMap.get(prAuthorLogin);
+              const prContributor = contributorMap.get(contributorKey(prAuthorLogin));
               if (prContributor) {
                 prContributor.prs += 1;
               } else {
                 // PR author may not appear in commits, add them
-                contributorMap.set(prAuthorLogin, { login: prAuthorLogin, name: prAuthorLogin, commits: 0, prs: 1 });
+                contributorMap.set(contributorKey(prAuthorLogin), { login: prAuthorLogin, name: prAuthorLogin, commits: 0, prs: 1 });
               }
             }
           }
