@@ -66,6 +66,15 @@ test("extractLinkedIssues keeps grouped references after a URL path suffix", () 
   );
 });
 
+test("extractLinkedIssues keeps grouped references after a URL query suffix", () => {
+  assert.deepEqual(
+    extractLinkedIssues(
+      "closes https://github.com/owner/repo/issues/42?notification=1 and #43"
+    ),
+    [42, 43]
+  );
+});
+
 test("extractLinkedIssues follows cross-repository issue references", () => {
   assert.deepEqual(extractLinkedIssues("Fixes owner/repository#123"), [123]);
 });
