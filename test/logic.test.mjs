@@ -46,6 +46,17 @@ test("extractLinkedIssues follows full issue and PR URLs", () => {
   );
 });
 
+test("extractLinkedIssues accepts valid URL paths after the issue number", () => {
+  assert.deepEqual(
+    extractLinkedIssues("resolves https://github.com/owner/repo/issues/42/comments"),
+    [42]
+  );
+  assert.deepEqual(
+    extractLinkedIssues("closes https://github.com/owner/repo/pull/123/files"),
+    [123]
+  );
+});
+
 test("extractLinkedIssues follows cross-repository issue references", () => {
   assert.deepEqual(extractLinkedIssues("Fixes owner/repository#123"), [123]);
 });
@@ -61,6 +72,10 @@ test("extractLinkedIssues ignores bare #numbers without a closing keyword", () =
 
 test("extractLinkedIssues ignores issue-like numbers embedded in words", () => {
   assert.deepEqual(extractLinkedIssues("fixes #123abc and resolves owner/repo#45-beta"), []);
+});
+
+test("extractLinkedIssues ignores issue-like numbers followed by a path separator", () => {
+  assert.deepEqual(extractLinkedIssues("closes #123/extra and fixes owner/repo#45/details"), []);
 });
 
 test("extractLinkedIssues ignores issue-like numbers embedded in Unicode words", () => {
