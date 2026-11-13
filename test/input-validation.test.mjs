@@ -106,6 +106,10 @@ const invalidRefCases = [
   },
   {
     name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "repo", base: "release./candidate", head: "v2" },
+  },
+  {
+    name: "get_changes_between_refs",
     arguments: { owner: "owner", repo: "repo", base: "release//candidate", head: "v2" },
   },
   {
