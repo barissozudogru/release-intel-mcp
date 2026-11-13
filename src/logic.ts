@@ -164,9 +164,11 @@ export interface ReleaseContext {
   warnings?: string[];
 }
 
-// Display N/A for unavailable or non-finite statistics so invalid counts are not rendered.
+// Display N/A for unavailable, non-finite, or imprecise integer statistics.
 export function formatStat(value: number | null | undefined): string | number {
-  return value == null || !Number.isFinite(value) ? "N/A" : value;
+  return value == null || !Number.isFinite(value) || (Number.isInteger(value) && !Number.isSafeInteger(value))
+    ? "N/A"
+    : value;
 }
 
 export function renderItems(title: string, items: ReleaseItem[]): string[] {
