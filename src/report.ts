@@ -58,6 +58,8 @@ if (
   toRef.includes("..") ||
   fromRef === "." ||
   toRef === "." ||
+  fromRef === "@" ||
+  toRef === "@" ||
   fromRef.endsWith(".") ||
   toRef.endsWith(".") ||
   fromRef.split("/").some((component) => component.endsWith(".")) ||

@@ -26,6 +26,7 @@ const refSchema = z
   .refine((ref) => !ref.includes(":"), "Reference must not contain ':'")
   .refine((ref) => !ref.includes(".."), "Reference must not contain '..'")
   .refine((ref) => ref !== ".", "Reference must not be '.'")
+  .refine((ref) => ref !== "@", "Reference must not be '@'")
   .refine((ref) => !ref.endsWith("."), "Reference must not end with '.'")
   .refine((ref) => ref.split("/").every((component) => !component.endsWith(".")), "Reference components must not end with '.'")
   .refine((ref) => !ref.split("/").some((component) => component.endsWith(".lock")), "Reference components must not end with '.lock'")
