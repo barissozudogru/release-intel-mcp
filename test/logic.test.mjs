@@ -390,6 +390,10 @@ test("formatStat returns N/A for non-finite statistics", () => {
   assert.equal(formatStat(Number.NEGATIVE_INFINITY), "N/A");
 });
 
+test("formatStat returns N/A for unsafe integer statistics", () => {
+  assert.equal(formatStat(Number.MAX_SAFE_INTEGER + 1), "N/A");
+});
+
 test("renderMarkdown formats release evidence table with numbers when file statistics are present", () => {
   const data = {
     repository: "owner/repo",
