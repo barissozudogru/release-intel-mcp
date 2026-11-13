@@ -190,7 +190,7 @@ export function renderMarkdown(data: ReleaseContext): string {
     "",
     "| Commits | Pull requests | Files changed | Lines added | Lines deleted | Contributors |",
     "|---:|---:|---:|---:|---:|---:|",
-    `| ${formatStat(stats.total_commits ?? 0)} | ${formatStat(stats.total_prs ?? 0)} | ${formatStat(stats.total_files_changed)} | ${formatStat(stats.lines_added)} | ${formatStat(stats.lines_deleted)} | ${formatStat(stats.total_contributors ?? 0)} |`,
+    `| ${formatStat(stats.total_commits)} | ${formatStat(stats.total_prs)} | ${formatStat(stats.total_files_changed)} | ${formatStat(stats.lines_added)} | ${formatStat(stats.lines_deleted)} | ${formatStat(stats.total_contributors)} |`,
     "",
   ];
 
