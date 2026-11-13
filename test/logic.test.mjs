@@ -57,6 +57,15 @@ test("extractLinkedIssues accepts valid URL paths after the issue number", () =>
   );
 });
 
+test("extractLinkedIssues keeps grouped references after a URL path suffix", () => {
+  assert.deepEqual(
+    extractLinkedIssues(
+      "closes https://github.com/owner/repo/issues/42/comments and #43"
+    ),
+    [42, 43]
+  );
+});
+
 test("extractLinkedIssues follows cross-repository issue references", () => {
   assert.deepEqual(extractLinkedIssues("Fixes owner/repository#123"), [123]);
 });
