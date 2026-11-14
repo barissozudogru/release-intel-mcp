@@ -155,6 +155,10 @@ test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "BREAKING-CHANGE: remove old login"), "breaking");
 });
 
+test("categorizePRByLabels trims conventional commit prefixes", () => {
+  assert.equal(categorizePRByLabels([], "  feat: add login"), "feature");
+});
+
 test("categorizePRByLabels does not treat an embedded breaking-change phrase as a prefix", () => {
   assert.equal(
     categorizePRByLabels([], "docs: explain the BREAKING CHANGE: migration note"),
