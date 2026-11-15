@@ -446,7 +446,18 @@ server.registerTool(
         return obj;
       });
 
-      // Fix #13: stats already had other; keeping it consistent
+      const pullRequestStats = {
+        breaking: enrichedPRs.filter((pr) => pr.category === "breaking").length,
+        features: enrichedPRs.filter((pr) => pr.category === "feature").length,
+        fixes: enrichedPRs.filter((pr) => pr.category === "fix").length,
+        docs: enrichedPRs.filter((pr) => pr.category === "docs").length,
+        chores: enrichedPRs.filter((pr) => pr.category === "chore").length,
+        dependencies: enrichedPRs.filter((pr) => pr.category === "dependencies").length,
+        releases: enrichedPRs.filter((pr) => pr.category === "release").length,
+        other: enrichedPRs.filter((pr) => pr.category === "other").length,
+      };
+
+      // Keep pull-request category counts separate from direct commit evidence.
       const result: Record<string, unknown> = {
         repository: `${owner}/${repo}`,
         base,
@@ -454,14 +465,7 @@ server.registerTool(
         total_prs: enrichedPRs.length,
         total_commits_in_range: comparison.total_commits,
         stats: {
-          breaking: categories.breaking.length,
-          features: categories.feature.length,
-          fixes: categories.fix.length,
-          docs: categories.docs.length,
-          chores: categories.chore.length,
-          dependencies: categories.dependencies.length,
-          releases: categories.release.length,
-          other: categories.other.length,
+          ...pullRequestStats,
           direct_commits: directCommitObjects.length,
         },
         categorized: categories,

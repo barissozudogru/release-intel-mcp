@@ -630,6 +630,43 @@ test("change and pull request tools tolerate commits without author metadata", a
   }
 });
 
+test("pull request statistics do not count direct commits as pull requests", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "direct-commit-stats-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'abc12345',commit:{message:'direct commit',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "direct-commit-stats-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.total_prs, 0);
+    assert.equal(data.stats.direct_commits, 1);
+    assert.equal(data.stats.other, 0);
+    assert.equal(data.categorized.other.length, 1);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("direct commit outputs ignore whitespace-only author logins", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
