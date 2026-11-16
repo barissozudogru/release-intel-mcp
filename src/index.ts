@@ -18,6 +18,9 @@ const require = createRequire(import.meta.url);
 const { version: VERSION } = require("../package.json");
 
 const GITHUB_API = "https://api.github.com";
+const githubNameSchema = z
+  .string()
+  .regex(/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9._-]+$/);
 
 const refSchema = z
   .string()
@@ -200,8 +203,8 @@ server.registerTool(
       "Get all commits between two git refs enriched with associated PR metadata, author information, and linked issues. Uses the GitHub compare API.",
     inputSchema: z.object({
       // Fix #11: validate owner/repo to safe characters
-      owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
-      repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
+      owner: githubNameSchema.describe("GitHub repository owner (user or organization)"),
+      repo: githubNameSchema.describe("GitHub repository name"),
       base: refSchema.describe("Base ref (tag, branch, or commit SHA), the older point"),
       head: refSchema.describe("Head ref (tag, branch, or commit SHA), the newer point"),
     }),
@@ -325,8 +328,8 @@ server.registerTool(
       "Get all merged pull requests between two refs with full metadata including labels, linked issues, review counts, and files changed. PRs are categorized by label into: breaking, feature, fix, docs, chore, dependencies, other.",
     inputSchema: z.object({
       // Fix #11: validate owner/repo
-      owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
-      repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
+      owner: githubNameSchema.describe("GitHub repository owner (user or organization)"),
+      repo: githubNameSchema.describe("GitHub repository name"),
       base: refSchema.describe("Base ref (tag, branch, or commit SHA), the older point"),
       head: refSchema.describe("Head ref (tag, branch, or commit SHA), the newer point"),
     }),
@@ -501,8 +504,8 @@ server.registerTool(
       "Generate a structured release context object ready for AI synthesis into release notes. Combines commit data, PR metadata, linked issues, contributor list, and aggregate statistics for the range between two tags.",
     inputSchema: z.object({
       // Fix #11: validate owner/repo
-      owner: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository owner (user or organization)"),
-      repo: z.string().regex(/^[a-zA-Z0-9._-]+$/).describe("GitHub repository name"),
+      owner: githubNameSchema.describe("GitHub repository owner (user or organization)"),
+      repo: githubNameSchema.describe("GitHub repository name"),
       from_tag: refSchema.describe("The previous release tag (base / older ref)"),
       to_tag: refSchema.describe("The new release tag or HEAD (head / newer ref)"),
     }),

@@ -5,6 +5,30 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 const invalidRefCases = [
   {
+    name: "get_release_summary",
+    arguments: { owner: ".", repo: "repo", from_tag: "v1", to_tag: "v2" },
+  },
+  {
+    name: "get_release_summary",
+    arguments: { owner: "owner", repo: "-", from_tag: "v1", to_tag: "v2" },
+  },
+  {
+    name: "get_changes_between_refs",
+    arguments: { owner: ".", repo: "repo", base: "v1", head: "v2" },
+  },
+  {
+    name: "get_changes_between_refs",
+    arguments: { owner: "owner", repo: "-", base: "v1", head: "v2" },
+  },
+  {
+    name: "get_pull_requests_in_range",
+    arguments: { owner: ".", repo: "repo", base: "v1", head: "v2" },
+  },
+  {
+    name: "get_pull_requests_in_range",
+    arguments: { owner: "owner", repo: "-", base: "v1", head: "v2" },
+  },
+  {
     name: "get_changes_between_refs",
     arguments: { owner: "owner", repo: "repo", base: "", head: "v1" },
   },
