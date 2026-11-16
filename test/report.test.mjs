@@ -35,6 +35,19 @@ test("report rejects repository components with invalid characters", () => {
   assert.match(result.stderr, /Usage: release-intel-report/);
 });
 
+test("report rejects repository components containing no alphanumeric characters", () => {
+  for (const repository of ["./repo", "owner/-"]) {
+    const result = spawnSync(
+      process.execPath,
+      ["dist/report.js", repository, "v1", "v2"],
+      { encoding: "utf8", timeout: 3000 }
+    );
+
+    assert.equal(result.status, 1, repository);
+    assert.match(result.stderr, /Usage: release-intel-report/, repository);
+  }
+});
+
 test("report rejects unexpected positional arguments", () => {
   const result = spawnSync(
     process.execPath,
