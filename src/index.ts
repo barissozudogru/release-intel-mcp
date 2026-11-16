@@ -142,7 +142,7 @@ interface GitHubPR {
   deletions?: number;
   changed_files?: number;
   review_comments?: number;
-  comments: number;
+  comments?: number;
   draft: boolean;
 }
 
@@ -412,7 +412,7 @@ server.registerTool(
           deletions: pr.deletions ?? 0,
           changed_files: pr.changed_files ?? 0,
           review_comments: pr.review_comments ?? 0,
-          total_comments: pr.comments,
+          total_comments: pr.comments ?? 0,
         };
       });
 
