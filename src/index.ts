@@ -180,9 +180,9 @@ function commitAuthorDate(commit: GitHubCommit): string {
 }
 
 function mergeTimestamp(value: string | null): number {
-  if (!value?.trim()) return 0;
+  if (!value?.trim()) return Number.NEGATIVE_INFINITY;
   const timestamp = Date.parse(value);
-  return Number.isFinite(timestamp) ? timestamp : 0;
+  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
 }
 
 // Fix #17: use VERSION from package.json
