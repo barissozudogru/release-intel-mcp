@@ -51,6 +51,7 @@ export function summarizeBody(body: string | null, maxLength?: number): string {
 // Fix #14: conventional commit prefix fallback when no labels match
 export function categorizePRByLabels(labels: string[], commitMessage = ""): string {
   const lower = labels
+    .filter((l): l is string => typeof l === "string")
     .map((l) => l.trim().toLowerCase())
     .filter((l) => !/^(?:not|non)[-_ :]/.test(l));
   const hasLabelTerm = (label: string, terms: string): boolean =>

@@ -144,6 +144,10 @@ test("categorizePRByLabels ignores explicitly negated category labels", () => {
   assert.equal(categorizePRByLabels(["not:bug"]), "other");
 });
 
+test("categorizePRByLabels ignores malformed label entries", () => {
+  assert.equal(categorizePRByLabels(["bug", undefined]), "fix");
+});
+
 test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "feat: add login"), "feature");
   assert.equal(categorizePRByLabels([], "fix: null crash"), "fix");
