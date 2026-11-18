@@ -48,6 +48,19 @@ test("report rejects repository components containing no alphanumeric characters
   }
 });
 
+test("report rejects repository components longer than GitHub limits", () => {
+  for (const repository of [`${"a".repeat(40)}/repo`, `owner/${"a".repeat(101)}`]) {
+    const result = spawnSync(
+      process.execPath,
+      ["dist/report.js", repository, "v1", "v2"],
+      { encoding: "utf8", timeout: 3000 }
+    );
+
+    assert.equal(result.status, 1, repository);
+    assert.match(result.stderr, /Usage: release-intel-report/, repository);
+  }
+});
+
 test("report rejects unexpected positional arguments", () => {
   const result = spawnSync(
     process.execPath,
