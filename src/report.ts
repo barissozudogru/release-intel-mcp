@@ -90,7 +90,7 @@ if (repositoryParts.length !== 2 || !repositoryParts[0] || !repositoryParts[1]) 
   usage(1);
 }
 const [owner, repo] = repositoryParts;
-if (!/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9._-]+$/.test(owner) || !/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9._-]+$/.test(repo)) {
+if (!/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9._-]{1,39}$/.test(owner) || !/^(?=.*[a-zA-Z0-9])[a-zA-Z0-9._-]{1,100}$/.test(repo)) {
   usage(1);
 }
 

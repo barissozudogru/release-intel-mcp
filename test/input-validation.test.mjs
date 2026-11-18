@@ -6,6 +6,14 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const invalidRefCases = [
   {
     name: "get_release_summary",
+    arguments: { owner: "a".repeat(40), repo: "repo", from_tag: "v1", to_tag: "v2" },
+  },
+  {
+    name: "get_release_summary",
+    arguments: { owner: "owner", repo: "a".repeat(101), from_tag: "v1", to_tag: "v2" },
+  },
+  {
+    name: "get_release_summary",
     arguments: { owner: ".", repo: "repo", from_tag: "v1", to_tag: "v2" },
   },
   {
