@@ -240,6 +240,10 @@ test("summarizeBody strips HTML comments and normalizes line endings", () => {
   assert.ok(!result.includes("\r"));
 });
 
+test("summarizeBody strips unterminated HTML comments", () => {
+  assert.equal(summarizeBody("visible <!-- secret"), "visible");
+});
+
 test("summarizeBody normalizes lone carriage returns", () => {
   assert.equal(summarizeBody("first\rsecond"), "first\nsecond");
 });
