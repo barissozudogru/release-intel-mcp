@@ -4,6 +4,7 @@
 // Fix #4: remove the overly broad /#(\d+)/g pattern that causes false positives
 export function extractLinkedIssues(body: string | null): number[] {
   if (!body) return [];
+  const searchableBody = body.replace(/<!--[\s\S]*?(?:-->|$)/g, "");
   const reference = String.raw`(?:[\w.-]+\/[\w.-]+)?#\d+(?![\p{L}\p{N}\p{M}_\/-])|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/\d+(?![\p{L}\p{N}\p{M}_-])(?:[\/?#][^\s,)]*)*`;
   const pattern = new RegExp(
     String.raw`(?<![\p{L}\p{N}\p{M}_-])(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s+|:\s*)((?:${reference})(?:\s*(?:,\s*and|,|and)\s*(?:${reference}))*)`,
@@ -15,7 +16,7 @@ export function extractLinkedIssues(body: string | null): number[] {
   );
   const issues = new Set<number>();
   let match;
-  while ((match = pattern.exec(body)) !== null) {
+  while ((match = pattern.exec(searchableBody)) !== null) {
     let referenceMatch;
     while ((referenceMatch = referencePattern.exec(match[1])) !== null) {
       const issueNumber = Number(referenceMatch[1] ?? referenceMatch[2]);

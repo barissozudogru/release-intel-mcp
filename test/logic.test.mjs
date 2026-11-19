@@ -88,6 +88,14 @@ test("extractLinkedIssues ignores bare #numbers without a closing keyword", () =
   assert.deepEqual(extractLinkedIssues("see #100 for context"), []);
 });
 
+test("extractLinkedIssues ignores closing references inside HTML comments", () => {
+  assert.deepEqual(extractLinkedIssues("<!-- closes #123 -->"), []);
+});
+
+test("extractLinkedIssues ignores closing references inside unterminated HTML comments", () => {
+  assert.deepEqual(extractLinkedIssues("<!-- closes #123"), []);
+});
+
 test("extractLinkedIssues ignores issue-like numbers embedded in words", () => {
   assert.deepEqual(extractLinkedIssues("fixes #123abc and resolves owner/repo#45-beta"), []);
 });
