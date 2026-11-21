@@ -529,7 +529,7 @@ test("get changes warns when the compare file list reaches GitHub's limit", asyn
   }
 });
 
-test("release summary tolerates commits without author metadata", async () => {
+test("change output tolerates malformed commit author metadata", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["dist/index.js"],
@@ -540,8 +540,9 @@ test("release summary tolerates commits without author metadata", async () => {
       NODE_OPTIONS: [
         process.env.NODE_OPTIONS,
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
-          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
-          "{sha:'abc12345',commit:{message:'direct commit',author:null},author:null,html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[" +
+          "{sha:'null-author',commit:{message:'null author',author:null},author:null,html_url:'https://example.test/null-author'}," +
+          "{sha:'malformed-author',commit:{message:'malformed author',author:{name:null,email:42,date:'2026-01-01'}},author:{login:42},html_url:'https://example.test/malformed-author'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200});" +
           "return new Response(JSON.stringify([]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
@@ -552,13 +553,24 @@ test("release summary tolerates commits without author metadata", async () => {
   try {
     await client.connect(transport);
     const result = await client.callTool({
-      name: "get_release_summary",
-      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
     });
     assert.equal(result.isError, undefined);
     const data = JSON.parse(result.content[0].text);
-    assert.equal(data.all_commits[0].author, "unknown");
-    assert.equal(data.all_commits[0].date, "");
+    assert.equal(data.commits[0].author_login, null);
+    assert.equal(data.commits[0].author_email, "");
+    assert.equal(data.commits[1].author_login, null);
+    assert.equal(data.commits[1].author_email, "");
+
+    const summary = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(summary.isError, undefined);
+    const summaryData = JSON.parse(summary.content[0].text);
+    assert.equal(summaryData.all_commits[0].author, "unknown");
+    assert.equal(summaryData.all_commits[1].author, "unknown");
   } finally {
     await client.close().catch(() => undefined);
   }
