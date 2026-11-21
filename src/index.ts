@@ -145,7 +145,7 @@ interface GitHubPR {
   user: {
     login: string;
   };
-  labels: Array<{ name: string }>;
+  labels?: Array<{ name: string }>;
   additions?: number;
   deletions?: number;
   changed_files?: number;
@@ -173,6 +173,14 @@ function commitAuthorLogin(commit: GitHubCommit): string {
 
 function pullRequestAuthorLogin(pr: Pick<GitHubPR, "user">): string {
   return pr.user?.login?.trim() || "unknown";
+}
+
+function pullRequestLabels(pr: Pick<GitHubPR, "labels">): string[] {
+  return (Array.isArray(pr.labels) ? pr.labels : [])
+    .filter((label): label is { name: string } =>
+      typeof label === "object" && label !== null && typeof label.name === "string"
+    )
+    .map((label) => label.name);
 }
 
 function contributorKey(login: string): string {
@@ -254,7 +262,7 @@ server.registerTool(
           if (mergedPR) {
             prNumber = mergedPR.number;
             prTitle = mergedPR.title;
-            prLabels = mergedPR.labels.map((l) => l.name);
+            prLabels = pullRequestLabels(mergedPR);
             prBodySummary = summarizeBody(mergedPR.body);
             linkedIssues = extractLinkedIssues(mergedPR.body);
           }
@@ -401,7 +409,7 @@ server.registerTool(
       };
 
       const enrichedPRs = Array.from(prMap.values()).map((pr) => {
-        const labels = pr.labels.map((l) => l.name);
+        const labels = pullRequestLabels(pr);
         // Fix #14: pass first commit message for conventional commit fallback (title is closest available here)
         const category = categorizePRByLabels(labels, pr.title);
         return {
@@ -555,7 +563,7 @@ server.registerTool(
           );
           for (const pr of prs) {
             if (typeof pr.merged_at === "string" && pr.merged_at.trim() !== "" && !prMap.has(pr.number)) {
-              const labels = pr.labels.map((l) => l.name);
+              const labels = pullRequestLabels(pr);
               prMap.set(pr.number, {
                 ...pr,
                 linked_issues: extractLinkedIssues(pr.body),
@@ -639,7 +647,7 @@ server.registerTool(
         // Fix #7: use PR author login
         author: pullRequestAuthorLogin(pr),
         merged_at: pr.merged_at,
-        labels: pr.labels.map((l) => l.name),
+        labels: pullRequestLabels(pr),
         body_summary: pr.body_summary,
         linked_issues: pr.linked_issues,
         // Fix #3: guard with ?? 0
