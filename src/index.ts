@@ -164,11 +164,13 @@ interface GitHubCompareResponse {
 }
 
 function commitAuthorName(commit: GitHubCommit): string {
-  return commit.commit.author?.name?.trim() || commit.author?.login?.trim() || "unknown";
+  const name = commit.commit.author?.name;
+  const login = commit.author?.login;
+  return (typeof name === "string" ? name.trim() : "") || (typeof login === "string" ? login.trim() : "") || "unknown";
 }
 
 function commitAuthorLogin(commit: GitHubCommit): string {
-  return commit.author?.login?.trim() || commitAuthorName(commit);
+  return (typeof commit.author?.login === "string" ? commit.author.login.trim() : "") || commitAuthorName(commit);
 }
 
 function pullRequestAuthorLogin(pr: Pick<GitHubPR, "user">): string {
@@ -188,7 +190,7 @@ function contributorKey(login: string): string {
 }
 
 function commitAuthorEmail(commit: GitHubCommit): string {
-  return commit.commit.author?.email?.trim() ?? "";
+  return typeof commit.commit.author?.email === "string" ? commit.commit.author.email.trim() : "";
 }
 
 function commitAuthorDate(commit: GitHubCommit): string {
@@ -284,7 +286,7 @@ server.registerTool(
           message: firstLine,
           author_name: commitAuthorName(commit),
           author_email: commitAuthorEmail(commit),
-          author_login: commit.author?.login?.trim() || null,
+          author_login: typeof commit.author?.login === "string" ? commit.author.login.trim() || null : null,
           committed_at: commitAuthorDate(commit),
           commit_url: commit.html_url,
           pr_number: prNumber,
@@ -545,7 +547,8 @@ server.registerTool(
 
       // Fix #2: batchAsync instead of Promise.all
       await batchAsync(comparison.commits, async (commit) => {
-        const login = commit.author?.login?.trim() || commit.commit.author?.email?.trim() || commitAuthorName(commit).trim() || "unknown";
+        const rawLogin = commit.author?.login;
+        const login = (typeof rawLogin === "string" ? rawLogin.trim() : "") || commitAuthorEmail(commit) || commitAuthorName(commit).trim() || "unknown";
         const name = commitAuthorName(commit);
         const firstCommitLine = commit.commit.message.split("\n")[0].trim();
 
