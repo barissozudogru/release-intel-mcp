@@ -37,6 +37,39 @@ test("pull request range tolerates a response without labels", async () => {
   }
 });
 
+test("pull request range tolerates a malformed author login", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-author-login-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[{sha:'commit',commit:{message:'feat: add thing',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([{number:1,title:'feat: Add thing',body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/1',user:{login:42},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-author-login-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.categorized.feature[0].author, "unknown");
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 const invalidRefCases = [
   {
     name: "get_release_summary",
