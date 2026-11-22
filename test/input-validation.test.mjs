@@ -119,6 +119,52 @@ test("PR processing paths ignore malformed entries without dropping valid pull r
   }
 });
 
+test("release tools ignore compare commits with malformed SHAs", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-sha-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[{sha:42},{sha:'valid-sha',commit:{message:'feat: keep this commit',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-sha-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const changes = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(changes.isError, undefined);
+    assert.deepEqual(JSON.parse(changes.content[0].text).commits.map((commit) => commit.sha_full), ["valid-sha"]);
+
+    const pullRequests = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(pullRequests.isError, undefined);
+    assert.equal(JSON.parse(pullRequests.content[0].text).stats.direct_commits, 1);
+
+    const summary = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(summary.isError, undefined);
+    assert.deepEqual(JSON.parse(summary.content[0].text).all_commits.map((commit) => commit.sha), ["valid-sh"]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("PR processing paths ignore entries with invalid numbers", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
