@@ -174,7 +174,7 @@ function commitAuthorLogin(commit: GitHubCommit): string {
 }
 
 function pullRequestAuthorLogin(pr: Pick<GitHubPR, "user">): string {
-  return pr.user?.login?.trim() || "unknown";
+  return (typeof pr.user?.login === "string" ? pr.user.login.trim() : "") || "unknown";
 }
 
 function pullRequestLabels(pr: Pick<GitHubPR, "labels">): string[] {
