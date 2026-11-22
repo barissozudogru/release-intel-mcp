@@ -197,6 +197,11 @@ function commitAuthorDate(commit: GitHubCommit): string {
   return commit.commit.author?.date ?? "";
 }
 
+function firstCommitLine(commit: GitHubCommit): string {
+  const message = commit?.commit?.message;
+  return typeof message === "string" ? message.split("\n")[0].trim() : "";
+}
+
 function mergeTimestamp(value: string | null): number {
   if (!value?.trim()) return Number.NEGATIVE_INFINITY;
   const timestamp = Date.parse(value);
@@ -278,7 +283,7 @@ server.registerTool(
           }
         }
 
-        const firstLine = commit.commit.message.split("\n")[0].trim();
+        const firstLine = firstCommitLine(commit);
 
         return {
           sha: commit.sha.slice(0, 8),
@@ -448,7 +453,7 @@ server.registerTool(
       // Bug fix: categorize commits that have no associated merged PR (direct pushes)
       const directCommits = comparison.commits.filter((c) => !commitShasWithPR.has(c.sha));
       const directCommitObjects = directCommits.map((commit) => {
-        const firstLine = commit.commit.message.split("\n")[0].trim();
+        const firstLine = firstCommitLine(commit);
         const category = categorizePRByLabels([], firstLine);
         const obj = {
           sha: commit.sha.slice(0, 8),
@@ -550,7 +555,7 @@ server.registerTool(
         const rawLogin = commit.author?.login;
         const login = (typeof rawLogin === "string" ? rawLogin.trim() : "") || commitAuthorEmail(commit) || commitAuthorName(commit).trim() || "unknown";
         const name = commitAuthorName(commit);
-        const firstCommitLine = commit.commit.message.split("\n")[0].trim();
+        const firstCommitMessage = firstCommitLine(commit);
 
         const key = contributorKey(login);
         const existing = contributorMap.get(key);
@@ -577,7 +582,7 @@ server.registerTool(
                 // to surface it during iteration, so the two tools disagreed
                 // about the same PR.
                 category: categorizePRByLabels(labels, pr.title),
-                first_commit_message: firstCommitLine,
+                first_commit_message: firstCommitMessage,
               });
               // Fix #7: PR count goes to PR author, not commit author
               const prAuthorLogin = pullRequestAuthorLogin(pr);
@@ -696,7 +701,7 @@ server.registerTool(
         linked_issues: allLinkedIssues,
         all_commits: comparison.commits.map((c) => ({
           sha: c.sha.slice(0, 8),
-          message: c.commit.message.split("\n")[0].trim(),
+          message: firstCommitLine(c),
           author: commitAuthorLogin(c),
           date: commitAuthorDate(c),
         })),
