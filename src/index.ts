@@ -126,7 +126,7 @@ interface GitHubCommit {
       email: string;
       date: string;
     } | null;
-  };
+  } | null;
   author: {
     login: string;
   } | null;
@@ -164,7 +164,7 @@ interface GitHubCompareResponse {
 }
 
 function commitAuthorName(commit: GitHubCommit): string {
-  const name = commit.commit.author?.name;
+  const name = commit?.commit?.author?.name;
   const login = commit.author?.login;
   return (typeof name === "string" ? name.trim() : "") || (typeof login === "string" ? login.trim() : "") || "unknown";
 }
@@ -190,11 +190,11 @@ function contributorKey(login: string): string {
 }
 
 function commitAuthorEmail(commit: GitHubCommit): string {
-  return typeof commit.commit.author?.email === "string" ? commit.commit.author.email.trim() : "";
+  return typeof commit?.commit?.author?.email === "string" ? commit.commit.author.email.trim() : "";
 }
 
 function commitAuthorDate(commit: GitHubCommit): string {
-  return commit.commit.author?.date ?? "";
+  return commit?.commit?.author?.date ?? "";
 }
 
 function firstCommitLine(commit: GitHubCommit): string {
