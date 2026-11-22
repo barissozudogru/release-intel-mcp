@@ -70,6 +70,55 @@ test("pull request range tolerates a malformed author login", async () => {
   }
 });
 
+test("PR processing paths ignore malformed entries without dropping valid pull requests", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-pr-entry-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[{sha:'commit',commit:{message:'feat: add thing',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([null,{number:1,title:'feat: Add thing',body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],comments:0,draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-pr-entry-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text.slice(result.content[0].text.indexOf("{")));
+    assert.deepEqual(data.categorized.feature.map((pr) => pr.number), [1]);
+
+    const changes = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(changes.isError, undefined);
+    const changesData = JSON.parse(changes.content[0].text);
+    assert.equal(changesData.commits[0].pr_number, 1);
+
+    const summary = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(summary.isError, undefined);
+    const summaryData = JSON.parse(summary.content[0].text);
+    assert.deepEqual(summaryData.features.map((pr) => pr.number), [1]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 const invalidRefCases = [
   {
     name: "get_release_summary",

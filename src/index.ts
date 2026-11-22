@@ -264,7 +264,7 @@ server.registerTool(
           );
           // Fix #6: only pick merged PRs; no fallback to unmerged
           const mergedPR = prs.find(
-            (pr) => typeof pr.merged_at === "string" && pr.merged_at.trim() !== ""
+            (pr) => pr !== null && typeof pr === "object" && typeof pr.merged_at === "string" && pr.merged_at.trim() !== ""
           ) ?? null;
           if (mergedPR) {
             prNumber = mergedPR.number;
@@ -382,6 +382,7 @@ server.registerTool(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
           );
           for (const pr of prs) {
+            if (pr === null || typeof pr !== "object") continue;
             if (typeof pr.merged_at === "string" && pr.merged_at.trim() !== "") {
               commitShasWithPR.add(commit.sha);
               if (!prMap.has(pr.number)) {
@@ -570,6 +571,7 @@ server.registerTool(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
           );
           for (const pr of prs) {
+            if (pr === null || typeof pr !== "object") continue;
             if (typeof pr.merged_at === "string" && pr.merged_at.trim() !== "" && !prMap.has(pr.number)) {
               const labels = pullRequestLabels(pr);
               prMap.set(pr.number, {
