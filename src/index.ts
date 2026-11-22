@@ -189,6 +189,10 @@ function isValidPullRequestNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
+function isValidCommit(value: unknown): value is GitHubCommit {
+  return typeof value === "object" && value !== null && typeof (value as GitHubCommit).sha === "string" && (value as GitHubCommit).sha.length > 0;
+}
+
 function contributorKey(login: string): string {
   return login.toLowerCase();
 }
@@ -239,6 +243,7 @@ server.registerTool(
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`;
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
+      const commits = comparison.commits.filter(isValidCommit);
 
       // Fix #1: detect truncated commits from GitHub 250-commit API limit
       const commitsTruncated = comparison.total_commits > comparison.commits.length;
@@ -256,7 +261,7 @@ server.registerTool(
       let failedLookups = 0;
 
       // Fix #2: use batchAsync instead of raw Promise.all
-      const enrichedCommits = await batchAsync(comparison.commits, async (commit) => {
+      const enrichedCommits = await batchAsync(commits, async (commit) => {
         let prNumber: number | null = null;
         let prTitle: string | null = null;
         let prLabels: string[] = [];
@@ -364,6 +369,7 @@ server.registerTool(
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`;
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
+      const commits = comparison.commits.filter(isValidCommit);
 
       // Fix #1: detect truncation
       const warnings: string[] = [];
@@ -381,7 +387,7 @@ server.registerTool(
       const commitShasWithPR = new Set<string>();
 
       // Fix #2: batchAsync instead of Promise.all
-      await batchAsync(comparison.commits, async (commit) => {
+      await batchAsync(commits, async (commit) => {
         try {
           const prs = await githubGet<GitHubPR[]>(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
@@ -458,7 +464,7 @@ server.registerTool(
       }
 
       // Bug fix: categorize commits that have no associated merged PR (direct pushes)
-      const directCommits = comparison.commits.filter((c) => !commitShasWithPR.has(c.sha));
+      const directCommits = commits.filter((c) => !commitShasWithPR.has(c.sha));
       const directCommitObjects = directCommits.map((commit) => {
         const firstLine = firstCommitLine(commit);
         const category = categorizePRByLabels([], firstLine);
@@ -542,6 +548,7 @@ server.registerTool(
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(from_tag)}...${encodeURIComponent(to_tag)}`;
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
+      const commits = comparison.commits.filter(isValidCommit);
 
       // Fix #1: detect truncation
       const warnings: string[] = [];
@@ -558,7 +565,7 @@ server.registerTool(
       let failedLookups = 0;
 
       // Fix #2: batchAsync instead of Promise.all
-      await batchAsync(comparison.commits, async (commit) => {
+      await batchAsync(commits, async (commit) => {
         const rawLogin = commit.author?.login;
         const login = (typeof rawLogin === "string" ? rawLogin.trim() : "") || commitAuthorEmail(commit) || commitAuthorName(commit).trim() || "unknown";
         const name = commitAuthorName(commit);
@@ -708,7 +715,7 @@ server.registerTool(
         release_prs: releases.map(formatPR),
         other: other.map(formatPR),
         linked_issues: allLinkedIssues,
-        all_commits: comparison.commits.map((c) => ({
+        all_commits: commits.map((c) => ({
           sha: c.sha.slice(0, 8),
           message: firstCommitLine(c),
           author: commitAuthorLogin(c),
