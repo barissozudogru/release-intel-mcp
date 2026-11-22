@@ -3,7 +3,7 @@
 
 // Fix #4: remove the overly broad /#(\d+)/g pattern that causes false positives
 export function extractLinkedIssues(body: string | null): number[] {
-  if (!body) return [];
+  if (typeof body !== "string" || !body) return [];
   const searchableBody = body.replace(/<!--[\s\S]*?(?:-->|$)/g, "");
   const reference = String.raw`(?:[\w.-]+\/[\w.-]+)?#\d+(?![\p{L}\p{N}\p{M}_\/-])|https?:\/\/github\.com\/[^/]+\/[^/]+\/(?:issues|pull)\/\d+(?![\p{L}\p{N}\p{M}_-])(?:[\/?#][^\s,)]*)*`;
   const pattern = new RegExp(
@@ -29,7 +29,7 @@ export function extractLinkedIssues(body: string | null): number[] {
 }
 
 export function summarizeBody(body: string | null, maxLength?: number): string {
-  if (!body) return "";
+  if (typeof body !== "string" || !body) return "";
   const useDefaultLimit =
     maxLength === undefined ||
     (maxLength !== null && !Number.isFinite(maxLength)) ||
