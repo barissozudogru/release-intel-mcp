@@ -562,7 +562,7 @@ test("get changes warns when the compare file list reaches GitHub's limit", asyn
   }
 });
 
-test("change output tolerates malformed commit author metadata", async () => {
+test("change output tolerates malformed commit metadata", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
     args: ["dist/index.js"],
@@ -573,9 +573,10 @@ test("change output tolerates malformed commit author metadata", async () => {
       NODE_OPTIONS: [
         process.env.NODE_OPTIONS,
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
-          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:2,commits:[" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:3,commits:[" +
           "{sha:'null-author',commit:{message:'null author',author:null},author:null,html_url:'https://example.test/null-author'}," +
-          "{sha:'malformed-author',commit:{message:'malformed author',author:{name:null,email:42,date:'2026-01-01'}},author:{login:42},html_url:'https://example.test/malformed-author'}],files:[],ahead_by:2,behind_by:0,status:'ahead'}),{status:200});" +
+          "{sha:'malformed-author',commit:{message:'malformed author',author:{name:null,email:42,date:'2026-01-01'}},author:{login:42},html_url:'https://example.test/malformed-author'}," +
+          "{sha:'missing-commit',commit:null,author:null,html_url:'https://example.test/missing-commit'}],files:[],ahead_by:3,behind_by:0,status:'ahead'}),{status:200});" +
           "return new Response(JSON.stringify([]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
@@ -595,6 +596,10 @@ test("change output tolerates malformed commit author metadata", async () => {
     assert.equal(data.commits[0].author_email, "");
     assert.equal(data.commits[1].author_login, null);
     assert.equal(data.commits[1].author_email, "");
+    assert.equal(data.commits[2].message, "");
+    assert.equal(data.commits[2].author_name, "unknown");
+    assert.equal(data.commits[2].author_email, "");
+    assert.equal(data.commits[2].committed_at, "");
 
     const summary = await client.callTool({
       name: "get_release_summary",
@@ -604,6 +609,8 @@ test("change output tolerates malformed commit author metadata", async () => {
     const summaryData = JSON.parse(summary.content[0].text);
     assert.equal(summaryData.all_commits[0].author, "unknown");
     assert.equal(summaryData.all_commits[1].author, "unknown");
+    assert.equal(summaryData.all_commits[2].message, "");
+    assert.equal(summaryData.all_commits[2].author, "unknown");
   } finally {
     await client.close().catch(() => undefined);
   }
@@ -720,7 +727,7 @@ test("change and pull request tools tolerate commits without author metadata", a
         process.env.NODE_OPTIONS,
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
           "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
-          "{sha:'abc12345',commit:{message:'direct commit',author:null},author:null,html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "{sha:'abc12345',commit:null,author:null,html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
           "return new Response(JSON.stringify([]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
@@ -739,7 +746,7 @@ test("change and pull request tools tolerate commits without author metadata", a
     assert.deepEqual(changesData.commits[0], {
       sha: "abc12345",
       sha_full: "abc12345",
-      message: "direct commit",
+      message: "",
       author_name: "unknown",
       author_email: "",
       author_login: null,
@@ -761,7 +768,7 @@ test("change and pull request tools tolerate commits without author metadata", a
     assert.deepEqual(pullRequestData.categorized.other[0], {
       sha: "abc12345",
       sha_full: "abc12345",
-      message: "direct commit",
+      message: "",
       author: "unknown",
       committed_at: "",
       commit_url: "https://example.test/commit",
