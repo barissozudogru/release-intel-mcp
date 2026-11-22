@@ -198,7 +198,8 @@ function commitAuthorEmail(commit: GitHubCommit): string {
 }
 
 function commitAuthorDate(commit: GitHubCommit): string {
-  return commit?.commit?.author?.date ?? "";
+  const date = commit?.commit?.author?.date;
+  return typeof date === "string" ? date : "";
 }
 
 function firstCommitLine(commit: GitHubCommit): string {
