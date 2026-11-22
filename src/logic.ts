@@ -69,7 +69,7 @@ export function categorizePRByLabels(labels: string[], commitMessage = ""): stri
   if (lower.some((l) => hasLabelTerm(l, String.raw`(?:chore|ci|refactor|test|tests|testing)`))) return "chore";
 
   // Fallback: parse conventional commit prefix from commit message
-  if (commitMessage) {
+  if (typeof commitMessage === "string" && commitMessage) {
     const firstLine = commitMessage.split("\n")[0].trim();
     // Checked before the other prefixes so chore(release): reads as a release
     // rather than a chore. The word boundary keeps "released" out.

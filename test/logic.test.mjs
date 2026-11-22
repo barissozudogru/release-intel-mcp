@@ -161,6 +161,10 @@ test("categorizePRByLabels handles a malformed label list", () => {
   assert.equal(categorizePRByLabels(undefined, "feat: add login"), "feature");
 });
 
+test("categorizePRByLabels ignores a malformed commit message", () => {
+  assert.equal(categorizePRByLabels([], 42), "other");
+});
+
 test("categorizePRByLabels falls back to conventional commit prefixes", () => {
   assert.equal(categorizePRByLabels([], "feat: add login"), "feature");
   assert.equal(categorizePRByLabels([], "fix: null crash"), "fix");
