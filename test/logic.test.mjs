@@ -15,6 +15,14 @@ test("extractLinkedIssues returns an empty array for null or empty bodies", () =
   assert.deepEqual(extractLinkedIssues(""), []);
 });
 
+test("extractLinkedIssues ignores non-string runtime values", () => {
+  assert.deepEqual(extractLinkedIssues(42), []);
+});
+
+test("summarizeBody ignores non-string runtime values", () => {
+  assert.equal(summarizeBody(42), "");
+});
+
 test("extractLinkedIssues picks up close/fix/resolve keywords", () => {
   assert.deepEqual(extractLinkedIssues("closes #123"), [123]);
   assert.deepEqual(extractLinkedIssues("Fixes #456 and resolves #789"), [456, 789]);
