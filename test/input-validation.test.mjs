@@ -130,7 +130,7 @@ test("release tools ignore compare commits with malformed SHAs", async () => {
       NODE_OPTIONS: [
         process.env.NODE_OPTIONS,
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
-          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:3,commits:[{sha:42},{sha:'   '},{sha:'valid-sha',commit:{message:'feat: keep this commit',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:3,behind_by:0,status:'ahead'}),{status:200});" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:4,commits:[{sha:42},{sha:'   '},{sha:' valid-sha '},{sha:'valid-sha',commit:{message:'feat: keep this commit',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:4,behind_by:0,status:'ahead'}),{status:200});" +
           "return new Response(JSON.stringify([]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
