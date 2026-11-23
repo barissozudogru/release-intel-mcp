@@ -190,7 +190,8 @@ function isValidPullRequestNumber(value: unknown): value is number {
 }
 
 function isValidCommit(value: unknown): value is GitHubCommit {
-  return typeof value === "object" && value !== null && typeof (value as GitHubCommit).sha === "string" && (value as GitHubCommit).sha.length > 0;
+  const sha = typeof value === "object" && value !== null ? (value as GitHubCommit).sha : undefined;
+  return typeof sha === "string" && sha.trim().length > 0;
 }
 
 function contributorKey(login: string): string {
