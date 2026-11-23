@@ -244,14 +244,15 @@ server.registerTool(
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`;
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
-      const commits = comparison.commits.filter(isValidCommit);
+      const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
+      const commits = compareCommits.filter(isValidCommit);
 
       // Fix #1: detect truncated commits from GitHub 250-commit API limit
-      const commitsTruncated = comparison.total_commits > comparison.commits.length;
+      const commitsTruncated = comparison.total_commits > compareCommits.length;
       const warnings: string[] = [];
       if (commitsTruncated) {
         warnings.push(
-          `Warning: Only ${comparison.commits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
+          `Warning: Only ${compareCommits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
         );
       }
       const fileStats = calculateFileStats(comparison.files);
@@ -370,13 +371,14 @@ server.registerTool(
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`;
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
-      const commits = comparison.commits.filter(isValidCommit);
+      const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
+      const commits = compareCommits.filter(isValidCommit);
 
       // Fix #1: detect truncation
       const warnings: string[] = [];
-      if (comparison.total_commits > comparison.commits.length) {
+      if (comparison.total_commits > compareCommits.length) {
         warnings.push(
-          `Warning: Only ${comparison.commits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
+          `Warning: Only ${compareCommits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
         );
       }
 
@@ -556,13 +558,14 @@ server.registerTool(
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(from_tag)}...${encodeURIComponent(to_tag)}`;
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
-      const commits = comparison.commits.filter(isValidCommit);
+      const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
+      const commits = compareCommits.filter(isValidCommit);
 
       // Fix #1: detect truncation
       const warnings: string[] = [];
-      if (comparison.total_commits > comparison.commits.length) {
+      if (comparison.total_commits > compareCommits.length) {
         warnings.push(
-          `Warning: Only ${comparison.commits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
+          `Warning: Only ${compareCommits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
         );
       }
 
