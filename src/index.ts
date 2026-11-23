@@ -385,6 +385,7 @@ server.registerTool(
       // Collect PRs associated with each commit; track which SHAs have a merged PR
       const prMap = new Map<number, GitHubPR>();
       const commitShasWithPR = new Set<string>();
+      const commitShasWithSuccessfulLookup = new Set<string>();
 
       // Fix #2: batchAsync instead of Promise.all
       await batchAsync(commits, async (commit) => {
@@ -392,6 +393,9 @@ server.registerTool(
           const prs = await githubGet<GitHubPR[]>(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
           );
+          if (!Array.isArray(prs)) {
+            throw new Error("GitHub PR lookup returned a non-array response");
+          }
           for (const pr of prs) {
             if (pr === null || typeof pr !== "object") continue;
             if (!isValidPullRequestNumber(pr.number)) continue;
@@ -402,6 +406,7 @@ server.registerTool(
               }
             }
           }
+          commitShasWithSuccessfulLookup.add(commit.sha);
         } catch (err) {
           // Fix #10: count failures; break on fatal codes
           failedLookups++;
@@ -464,7 +469,9 @@ server.registerTool(
       }
 
       // Bug fix: categorize commits that have no associated merged PR (direct pushes)
-      const directCommits = commits.filter((c) => !commitShasWithPR.has(c.sha));
+      const directCommits = commits.filter(
+        (c) => commitShasWithSuccessfulLookup.has(c.sha) && !commitShasWithPR.has(c.sha)
+      );
       const directCommitObjects = directCommits.map((commit) => {
         const firstLine = firstCommitLine(commit);
         const category = categorizePRByLabels([], firstLine);

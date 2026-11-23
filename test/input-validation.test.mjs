@@ -667,6 +667,74 @@ test("change output ignores pull requests without merged status", async () => {
   }
 });
 
+test("pull request range does not classify failed lookups as direct commits", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "failed-pr-lookup-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[{sha:'commit',commit:{message:'change',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response('temporary failure',{status:500});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "failed-pr-lookup-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text.slice(result.content[0].text.indexOf("{")));
+    assert.equal(data.stats.direct_commits, 0);
+    assert.deepEqual(data.warnings, ["1 commit-to-PR lookups failed"]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
+test("pull request range does not classify malformed successful lookups as direct commits", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-pr-lookup-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[{sha:'commit',commit:{message:'change',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response('{}',{status:200,headers:{'content-type':'application/json'}});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-pr-lookup-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text.slice(result.content[0].text.indexOf("{")));
+    assert.equal(data.stats.direct_commits, 0);
+    assert.deepEqual(data.warnings, ["1 commit-to-PR lookups failed"]);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("get changes warns when the compare file list reaches GitHub's limit", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
