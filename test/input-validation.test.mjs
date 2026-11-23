@@ -165,6 +165,45 @@ test("release tools ignore compare commits with malformed SHAs", async () => {
   }
 });
 
+test("release tools tolerate a malformed compare commit list", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-compare-commits-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async()=>new Response(JSON.stringify({total_commits:0,commits:null,files:[],ahead_by:0,behind_by:0,status:'identical'}),{status:200})")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-compare-commits-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const args = { owner: "owner", repo: "repo", base: "v1", head: "v2" };
+
+    const changes = await client.callTool({ name: "get_changes_between_refs", arguments: args });
+    assert.equal(changes.isError, undefined);
+    assert.deepEqual(JSON.parse(changes.content[0].text).commits, []);
+
+    const pullRequests = await client.callTool({ name: "get_pull_requests_in_range", arguments: args });
+    assert.equal(pullRequests.isError, undefined);
+    assert.equal(JSON.parse(pullRequests.content[0].text).total_prs, 0);
+
+    const summary = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(summary.isError, undefined);
+    assert.deepEqual(JSON.parse(summary.content[0].text).all_commits, []);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("PR processing paths ignore entries with invalid numbers", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
