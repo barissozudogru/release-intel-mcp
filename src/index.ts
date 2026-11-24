@@ -217,7 +217,9 @@ function firstCommitLine(commit: GitHubCommit): string {
 }
 
 function mergeTimestamp(value: string | null): number {
-  if (!value?.trim()) return Number.NEGATIVE_INFINITY;
+  if (!value?.trim() || !/^\d{4}-\d{2}-\d{2}(?:T|$)/.test(value)) {
+    return Number.NEGATIVE_INFINITY;
+  }
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
 }
