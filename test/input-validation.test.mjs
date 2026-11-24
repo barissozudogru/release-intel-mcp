@@ -204,6 +204,56 @@ test("release tools tolerate a malformed compare commit list", async () => {
   }
 });
 
+test("release summary omits a malformed compare commit count", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-compare-count-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async()=>new Response(JSON.stringify({total_commits:1.5,commits:[],files:[],ahead_by:0,behind_by:0,status:'identical'}),{status:200})")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-compare-count-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const args = { owner: "owner", repo: "repo", base: "v1", head: "v2" };
+    const changes = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: args,
+    });
+    assert.equal(changes.isError, undefined);
+    assert.doesNotMatch(changes.content[0].text, /Only 0 of 1\.5 commits/);
+    const changesData = JSON.parse(changes.content[0].text.slice(changes.content[0].text.indexOf("{")));
+    assert.equal(Object.hasOwn(changesData, "total_commits"), false);
+
+    const pullRequests = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: args,
+    });
+    assert.equal(pullRequests.isError, undefined);
+    assert.doesNotMatch(pullRequests.content[0].text, /Only 0 of 1\.5 commits/);
+    const pullRequestsData = JSON.parse(pullRequests.content[0].text.slice(pullRequests.content[0].text.indexOf("{")));
+    assert.equal(Object.hasOwn(pullRequestsData, "total_commits_in_range"), false);
+
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: args.owner, repo: args.repo, from_tag: args.base, to_tag: args.head },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text.slice(result.content[0].text.indexOf("{")));
+    assert.equal(Object.hasOwn(data.stats, "total_commits"), false);
+    assert.doesNotMatch(result.content[0].text, /Only 0 of 1\.5 commits/);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("PR processing paths ignore entries with invalid numbers", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,

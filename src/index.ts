@@ -189,6 +189,10 @@ function isValidPullRequestNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
+function validCount(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+}
+
 function isValidCommit(value: unknown): value is GitHubCommit {
   const sha = typeof value === "object" && value !== null ? (value as GitHubCommit).sha : undefined;
   return typeof sha === "string" && sha.trim() === sha && sha.length > 0;
@@ -246,13 +250,14 @@ server.registerTool(
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
       const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
       const commits = compareCommits.filter(isValidCommit);
+      const totalCommits = validCount(comparison.total_commits);
 
       // Fix #1: detect truncated commits from GitHub 250-commit API limit
-      const commitsTruncated = comparison.total_commits > compareCommits.length;
+      const commitsTruncated = totalCommits !== undefined && totalCommits > compareCommits.length;
       const warnings: string[] = [];
       if (commitsTruncated) {
         warnings.push(
-          `Warning: Only ${compareCommits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
+          `Warning: Only ${compareCommits.length} of ${totalCommits} commits were analyzed due to GitHub API limits.`
         );
       }
       const fileStats = calculateFileStats(comparison.files);
@@ -325,7 +330,7 @@ server.registerTool(
         repository: `${owner}/${repo}`,
         status: comparison.status,
         ahead_by: comparison.ahead_by,
-        total_commits: comparison.total_commits,
+        total_commits: totalCommits,
         files_changed: fileStats.truncated ? null : fileStats.total_files_changed ?? 0,
         commits: enrichedCommits,
       };
@@ -373,12 +378,13 @@ server.registerTool(
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
       const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
       const commits = compareCommits.filter(isValidCommit);
+      const totalCommits = validCount(comparison.total_commits);
 
       // Fix #1: detect truncation
       const warnings: string[] = [];
-      if (comparison.total_commits > compareCommits.length) {
+      if (totalCommits !== undefined && totalCommits > compareCommits.length) {
         warnings.push(
-          `Warning: Only ${compareCommits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
+          `Warning: Only ${compareCommits.length} of ${totalCommits} commits were analyzed due to GitHub API limits.`
         );
       }
 
@@ -509,7 +515,7 @@ server.registerTool(
         base,
         head,
         total_prs: enrichedPRs.length,
-        total_commits_in_range: comparison.total_commits,
+        total_commits_in_range: totalCommits,
         stats: {
           ...pullRequestStats,
           direct_commits: directCommitObjects.length,
@@ -560,12 +566,13 @@ server.registerTool(
       const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
       const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
       const commits = compareCommits.filter(isValidCommit);
+      const totalCommits = validCount(comparison.total_commits);
 
       // Fix #1: detect truncation
       const warnings: string[] = [];
-      if (comparison.total_commits > compareCommits.length) {
+      if (totalCommits !== undefined && totalCommits > compareCommits.length) {
         warnings.push(
-          `Warning: Only ${compareCommits.length} of ${comparison.total_commits} commits were analyzed due to GitHub API limits.`
+          `Warning: Only ${compareCommits.length} of ${totalCommits} commits were analyzed due to GitHub API limits.`
         );
       }
 
@@ -696,7 +703,7 @@ server.registerTool(
         to_tag,
         generated_at: new Date().toISOString(),
         stats: {
-          total_commits: comparison.total_commits,
+          total_commits: totalCommits,
           total_prs: allPRs.length,
           ...(fileStats.truncated
             ? {}
