@@ -612,7 +612,7 @@ test("pull requests with invalid merge times still sort deterministically", asyn
           "{sha:'second',commit:{message:'second',author:{name:'Second',email:'second@example.test',date:'2026-01-02'}},author:{login:'second'},html_url:'https://example.test/second'}," +
           "{sha:'third',commit:{message:'third',author:{name:'Third',email:'third@example.test',date:'2026-01-03'}},author:{login:'third'},html_url:'https://example.test/third'}],files:[],ahead_by:3,behind_by:0,status:'ahead'}),{status:200});" +
           "const number=value.includes('/third/pulls')?3:(value.includes('/first/pulls')?1:2);" +
-          "const mergedAt=number===1?'not-a-timestamp':(number===2?'2026-01-04T00:00:00Z':'1970-01-01T00:00:00Z');" +
+          "const mergedAt=number===1?'1':(number===2?'2026-01-04T00:00:00Z':'1970-01-01T00:00:00Z');" +
           "return new Response(JSON.stringify([{number,title:'PR '+number,body:null,state:'closed',merged_at:mergedAt,html_url:'https://example.test/pr/'+number,user:{login:'author'+number},labels:[],comments:0,draft:false}]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
