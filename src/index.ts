@@ -217,10 +217,20 @@ function firstCommitLine(commit: GitHubCommit): string {
 }
 
 function mergeTimestamp(value: string | null): number {
-  if (!value?.trim() || !/^\d{4}-\d{2}-\d{2}(?:T|$)/.test(value)) {
+  const dateMatch = value?.match(/^(\d{4})-(\d{2})-(\d{2})(?:T|$)/);
+  if (!dateMatch) {
     return Number.NEGATIVE_INFINITY;
   }
-  const timestamp = Date.parse(value);
+  const year = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]);
+  const day = Number(dateMatch[3]);
+  const daysInMonth = month === 2
+    ? (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28)
+    : [4, 6, 9, 11].includes(month) ? 30 : 31;
+  if (month < 1 || month > 12 || day < 1 || day > daysInMonth) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  const timestamp = Date.parse(value ?? "");
   return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
 }
 
