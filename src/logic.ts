@@ -116,16 +116,18 @@ export function calculateFileStats(
   }
   const sumSafeLineStats = (field: "additions" | "deletions"): number | undefined => {
     let sum = 0;
+    let hasValidValue = false;
     for (const file of list) {
       if (file === null || typeof file !== "object") continue;
       const value = file[field];
       if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) {
+        hasValidValue = true;
         const next = sum + value;
         if (!Number.isSafeInteger(next)) return undefined;
         sum = next;
       }
     }
-    return sum;
+    return hasValidValue || list.length === 0 ? sum : undefined;
   };
   return {
     truncated: false,
