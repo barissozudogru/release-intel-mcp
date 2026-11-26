@@ -227,7 +227,7 @@ function mergeTimestamp(value: string | null): number {
   const daysInMonth = month === 2
     ? (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0) ? 29 : 28)
     : [4, 6, 9, 11].includes(month) ? 30 : 31;
-  if (month < 1 || month > 12 || day < 1 || day > daysInMonth) {
+  if (year < 1 || month < 1 || month > 12 || day < 1 || day > daysInMonth) {
     return Number.NEGATIVE_INFINITY;
   }
   const timestamp = Date.parse(value ?? "");
