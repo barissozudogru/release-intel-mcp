@@ -476,8 +476,8 @@ server.registerTool(
           body_summary: summarizeBody(pr.body),
           linked_issues: extractLinkedIssues(pr.body),
           // Fix #3: guard with ?? 0 for fields absent in summary response
-          additions: pr.additions ?? 0,
-          deletions: pr.deletions ?? 0,
+          additions: validCount(pr.additions) ?? 0,
+          deletions: validCount(pr.deletions) ?? 0,
           changed_files: validCount(pr.changed_files) ?? 0,
           review_comments: validCount(pr.review_comments) ?? 0,
           total_comments: pr.comments ?? 0,
