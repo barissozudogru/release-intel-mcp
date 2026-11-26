@@ -204,6 +204,45 @@ test("release tools tolerate a malformed compare commit list", async () => {
   }
 });
 
+test("release tools tolerate a malformed compare response", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-compare-response-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async()=>new Response('null',{status:200})")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-compare-response-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const args = { owner: "owner", repo: "repo", base: "v1", head: "v2" };
+
+    const changes = await client.callTool({ name: "get_changes_between_refs", arguments: args });
+    assert.equal(changes.isError, undefined);
+    assert.deepEqual(JSON.parse(changes.content[0].text).commits, []);
+
+    const pullRequests = await client.callTool({ name: "get_pull_requests_in_range", arguments: args });
+    assert.equal(pullRequests.isError, undefined);
+    assert.equal(JSON.parse(pullRequests.content[0].text).total_prs, 0);
+
+    const summary = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(summary.isError, undefined);
+    assert.deepEqual(JSON.parse(summary.content[0].text).all_commits, []);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("release summary omits a malformed compare commit count", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,

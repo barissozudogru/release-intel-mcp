@@ -259,7 +259,10 @@ server.registerTool(
     // Fix #8: wrap in try/catch and return structured error
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`;
-      const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
+      const response = await githubGet<GitHubCompareResponse>(compareUrl);
+      const comparison = response !== null && typeof response === "object"
+        ? response
+        : {} as GitHubCompareResponse;
       const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
       const commits = compareCommits.filter(isValidCommit);
       const totalCommits = validCount(comparison.total_commits);
@@ -387,7 +390,10 @@ server.registerTool(
     // Fix #8: wrap in try/catch
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`;
-      const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
+      const response = await githubGet<GitHubCompareResponse>(compareUrl);
+      const comparison = response !== null && typeof response === "object"
+        ? response
+        : {} as GitHubCompareResponse;
       const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
       const commits = compareCommits.filter(isValidCommit);
       const totalCommits = validCount(comparison.total_commits);
@@ -575,7 +581,10 @@ server.registerTool(
     // Fix #8: wrap in try/catch
     try {
       const compareUrl = `${GITHUB_API}/repos/${owner}/${repo}/compare/${encodeURIComponent(from_tag)}...${encodeURIComponent(to_tag)}`;
-      const comparison = await githubGet<GitHubCompareResponse>(compareUrl);
+      const response = await githubGet<GitHubCompareResponse>(compareUrl);
+      const comparison = response !== null && typeof response === "object"
+        ? response
+        : {} as GitHubCompareResponse;
       const compareCommits = Array.isArray(comparison.commits) ? comparison.commits : [];
       const commits = compareCommits.filter(isValidCommit);
       const totalCommits = validCount(comparison.total_commits);
