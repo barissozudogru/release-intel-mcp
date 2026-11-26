@@ -479,7 +479,7 @@ server.registerTool(
           additions: pr.additions ?? 0,
           deletions: pr.deletions ?? 0,
           changed_files: validCount(pr.changed_files) ?? 0,
-          review_comments: pr.review_comments ?? 0,
+          review_comments: validCount(pr.review_comments) ?? 0,
           total_comments: pr.comments ?? 0,
         };
       });
