@@ -341,7 +341,7 @@ server.registerTool(
         head,
         repository: `${owner}/${repo}`,
         status: comparison.status,
-        ahead_by: comparison.ahead_by,
+        ahead_by: validCount(comparison.ahead_by),
         total_commits: totalCommits,
         files_changed: fileStats.truncated ? null : fileStats.total_files_changed ?? 0,
         commits: enrichedCommits,
