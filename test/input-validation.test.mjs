@@ -254,6 +254,36 @@ test("release summary omits a malformed compare commit count", async () => {
   }
 });
 
+test("change output omits a malformed compare ahead count", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "malformed-range-count-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async()=>new Response(JSON.stringify({total_commits:0,commits:[],files:[],ahead_by:'1',status:'behind'}),{status:200})")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-range-count-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_changes_between_refs",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(Object.hasOwn(data, "ahead_by"), false);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("PR processing paths ignore entries with invalid numbers", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
