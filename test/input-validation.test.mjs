@@ -1424,6 +1424,40 @@ test("pull request range defaults malformed changed file counts to zero", async 
   }
 });
 
+test("pull request range defaults malformed review comment counts to zero", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: process.env.GITHUB_TOKEN ?? "malformed-review-comments-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[" +
+          "{sha:'commit',commit:{message:'feat: sample',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify([{number:1,title:'Feature',body:null,state:'closed',merged_at:'2026-01-02',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],review_comments:'not-a-count',draft:false}]),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-review-comments-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_pull_requests_in_range",
+      arguments: { owner: "owner", repo: "repo", base: "v1", head: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    const data = JSON.parse(result.content[0].text);
+    assert.equal(data.categorized.other[0].review_comments, 0);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("release summary merges contributor logins that differ only by case", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,
