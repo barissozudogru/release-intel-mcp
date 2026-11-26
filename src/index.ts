@@ -480,7 +480,7 @@ server.registerTool(
           deletions: validCount(pr.deletions) ?? 0,
           changed_files: validCount(pr.changed_files) ?? 0,
           review_comments: validCount(pr.review_comments) ?? 0,
-          total_comments: pr.comments ?? 0,
+          total_comments: validCount(pr.comments) ?? 0,
         };
       });
 
