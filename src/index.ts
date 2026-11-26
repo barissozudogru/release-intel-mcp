@@ -478,7 +478,7 @@ server.registerTool(
           // Fix #3: guard with ?? 0 for fields absent in summary response
           additions: pr.additions ?? 0,
           deletions: pr.deletions ?? 0,
-          changed_files: pr.changed_files ?? 0,
+          changed_files: validCount(pr.changed_files) ?? 0,
           review_comments: pr.review_comments ?? 0,
           total_comments: pr.comments ?? 0,
         };
