@@ -714,7 +714,7 @@ server.registerTool(
         body_summary: pr.body_summary,
         linked_issues: pr.linked_issues,
         // Fix #3: guard with ?? 0
-        changed_files: pr.changed_files ?? 0,
+        changed_files: validCount(pr.changed_files) ?? 0,
       });
 
       // Fix #13: include other count in stats
