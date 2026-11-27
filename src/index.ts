@@ -275,8 +275,10 @@ server.registerTool(
           `Warning: Only ${compareCommits.length} of ${totalCommits} commits were analyzed due to GitHub API limits.`
         );
       }
-      const fileStats = calculateFileStats(comparison.files);
-      const fileWarning = fileStatsWarning(comparison.files);
+      const fileStats = Array.isArray(comparison.files)
+        ? calculateFileStats(comparison.files)
+        : undefined;
+      const fileWarning = fileStats ? fileStatsWarning(comparison.files) : undefined;
       if (fileWarning) warnings.push(fileWarning);
 
       // Fix #10: track failed lookups to surface in output
@@ -346,7 +348,7 @@ server.registerTool(
         status: comparison.status,
         ahead_by: validCount(comparison.ahead_by),
         total_commits: totalCommits,
-        files_changed: fileStats.truncated ? null : fileStats.total_files_changed ?? 0,
+        files_changed: !fileStats || fileStats.truncated ? null : fileStats.total_files_changed ?? 0,
         commits: enrichedCommits,
       };
 
