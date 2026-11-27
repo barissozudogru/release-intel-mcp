@@ -226,7 +226,9 @@ test("release tools tolerate a malformed compare response", async () => {
 
     const changes = await client.callTool({ name: "get_changes_between_refs", arguments: args });
     assert.equal(changes.isError, undefined);
-    assert.deepEqual(JSON.parse(changes.content[0].text).commits, []);
+    const changesData = JSON.parse(changes.content[0].text);
+    assert.deepEqual(changesData.commits, []);
+    assert.equal(changesData.files_changed, null);
 
     const pullRequests = await client.callTool({ name: "get_pull_requests_in_range", arguments: args });
     assert.equal(pullRequests.isError, undefined);
