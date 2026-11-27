@@ -119,6 +119,38 @@ test("PR processing paths ignore malformed entries without dropping valid pull r
   }
 });
 
+test("release summary warns when a PR lookup returns a non-array response", async () => {
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    stderr: "pipe",
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: "malformed-pr-response-test-token",
+      NODE_OPTIONS: [
+        process.env.NODE_OPTIONS,
+        `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
+          "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[{sha:'commit',commit:{message:'feat: add thing',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
+          "return new Response(JSON.stringify('malformed'),{status:200});" +
+          "}")}`,
+      ].filter(Boolean).join(" "),
+    },
+  });
+  const client = new Client({ name: "malformed-pr-response-test", version: "1.0.0" });
+
+  try {
+    await client.connect(transport);
+    const result = await client.callTool({
+      name: "get_release_summary",
+      arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
+    });
+    assert.equal(result.isError, undefined);
+    assert.match(result.content[0].text, /1 commit-to-PR lookups failed/);
+  } finally {
+    await client.close().catch(() => undefined);
+  }
+});
+
 test("release tools ignore compare commits with malformed SHAs", async () => {
   const transport = new StdioClientTransport({
     command: process.execPath,

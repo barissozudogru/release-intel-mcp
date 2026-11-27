@@ -624,6 +624,9 @@ server.registerTool(
           const prs = await githubGet<GitHubPR[]>(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
           );
+          if (!Array.isArray(prs)) {
+            throw new Error("GitHub PR lookup returned a non-array response");
+          }
           for (const pr of prs) {
             if (pr === null || typeof pr !== "object") continue;
             if (!isValidPullRequestNumber(pr.number)) continue;
