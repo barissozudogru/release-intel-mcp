@@ -685,8 +685,10 @@ server.registerTool(
       // API per-file totals, which are populated. When the comparison reaches the
       // GitHub API limit of 300 files, the file list is truncated, so omit file
       // and line statistics rather than returning partial counts.
-      const compareFiles = comparison.files ?? [];
-      const fileStats = calculateFileStats(compareFiles);
+      const compareFiles = comparison.files;
+      const fileStats = Array.isArray(compareFiles)
+        ? calculateFileStats(compareFiles)
+        : { truncated: false, total_files_changed: undefined, lines_added: undefined, lines_deleted: undefined };
       if (fileStats.truncated) {
         warnings.push(
           `Warning: File comparison was truncated at ${compareFiles.length} files due to GitHub API limits; file and line statistics are omitted.`
