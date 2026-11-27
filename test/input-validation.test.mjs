@@ -237,7 +237,11 @@ test("release tools tolerate a malformed compare response", async () => {
       arguments: { owner: "owner", repo: "repo", from_tag: "v1", to_tag: "v2" },
     });
     assert.equal(summary.isError, undefined);
-    assert.deepEqual(JSON.parse(summary.content[0].text).all_commits, []);
+    const summaryData = JSON.parse(summary.content[0].text);
+    assert.deepEqual(summaryData.all_commits, []);
+    assert.equal(summaryData.stats.total_files_changed, undefined);
+    assert.equal(summaryData.stats.lines_added, undefined);
+    assert.equal(summaryData.stats.lines_deleted, undefined);
   } finally {
     await client.close().catch(() => undefined);
   }
