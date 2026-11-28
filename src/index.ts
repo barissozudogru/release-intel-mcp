@@ -189,6 +189,15 @@ function isValidPullRequestNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
+function isValidMergedPullRequest(value: unknown): value is GitHubPR {
+  if (value === null || typeof value !== "object") return false;
+  const pr = value as GitHubPR;
+  return isValidPullRequestNumber(pr.number) &&
+    typeof pr.title === "string" &&
+    typeof pr.merged_at === "string" &&
+    pr.merged_at.trim() !== "";
+}
+
 function validCount(value: unknown): number | undefined {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 }
@@ -297,9 +306,7 @@ server.registerTool(
             `${GITHUB_API}/repos/${owner}/${repo}/commits/${commit.sha}/pulls`
           );
           // Fix #6: only pick merged PRs; no fallback to unmerged
-          const mergedPR = prs.find(
-            (pr) => pr !== null && typeof pr === "object" && isValidPullRequestNumber(pr.number) && typeof pr.merged_at === "string" && pr.merged_at.trim() !== ""
-          ) ?? null;
+          const mergedPR = prs.find(isValidMergedPullRequest) ?? null;
           if (mergedPR) {
             prNumber = mergedPR.number;
             prTitle = mergedPR.title;
@@ -426,9 +433,7 @@ server.registerTool(
             throw new Error("GitHub PR lookup returned a non-array response");
           }
           for (const pr of prs) {
-            if (pr === null || typeof pr !== "object") continue;
-            if (!isValidPullRequestNumber(pr.number)) continue;
-            if (typeof pr.merged_at === "string" && pr.merged_at.trim() !== "") {
+            if (isValidMergedPullRequest(pr)) {
               commitShasWithPR.add(commit.sha);
               if (!prMap.has(pr.number)) {
                 prMap.set(pr.number, pr);
@@ -628,9 +633,7 @@ server.registerTool(
             throw new Error("GitHub PR lookup returned a non-array response");
           }
           for (const pr of prs) {
-            if (pr === null || typeof pr !== "object") continue;
-            if (!isValidPullRequestNumber(pr.number)) continue;
-            if (typeof pr.merged_at === "string" && pr.merged_at.trim() !== "" && !prMap.has(pr.number)) {
+            if (isValidMergedPullRequest(pr) && !prMap.has(pr.number)) {
               const labels = pullRequestLabels(pr);
               prMap.set(pr.number, {
                 ...pr,
