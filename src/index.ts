@@ -194,6 +194,7 @@ function isValidMergedPullRequest(value: unknown): value is GitHubPR {
   const pr = value as GitHubPR;
   return isValidPullRequestNumber(pr.number) &&
     typeof pr.title === "string" &&
+    pr.title.trim() !== "" &&
     typeof pr.merged_at === "string" &&
     pr.merged_at.trim() !== "";
 }

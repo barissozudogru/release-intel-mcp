@@ -82,7 +82,7 @@ test("PR processing paths ignore malformed entries without dropping valid pull r
         process.env.NODE_OPTIONS,
         `--import=data:text/javascript,${encodeURIComponent("globalThis.fetch=async(url)=>{" +
           "if(String(url).includes('/compare/')) return new Response(JSON.stringify({total_commits:1,commits:[{sha:'commit',commit:{message:'feat: add thing',author:{name:'Author',email:'author@example.test',date:'2026-01-01'}},author:{login:'author'},html_url:'https://example.test/commit'}],files:[],ahead_by:1,behind_by:0,status:'ahead'}),{status:200});" +
-          "return new Response(JSON.stringify([null,{number:2,title:42,body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/2',user:{login:'malformed'},labels:[],comments:0,draft:false},{number:1,title:'feat: Add thing',body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],comments:0,draft:false}]),{status:200});" +
+          "return new Response(JSON.stringify([null,{number:2,title:42,body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/2',user:{login:'malformed'},labels:[],comments:0,draft:false},{number:3,title:'',body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/3',user:{login:'empty-title'},labels:[],comments:0,draft:false},{number:1,title:'feat: Add thing',body:null,state:'closed',merged_at:'2026-01-02T00:00:00Z',html_url:'https://example.test/pr/1',user:{login:'author'},labels:[],comments:0,draft:false}]),{status:200});" +
           "}")}`,
       ].filter(Boolean).join(" "),
     },
